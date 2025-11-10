@@ -12,7 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
+        // Removed statefulApi() - we're using token-based authentication, not session-based
+        // This prevents CSRF token validation on API routes
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

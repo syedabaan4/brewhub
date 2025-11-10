@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\StrongPassword;
+use App\Notifications\WelcomeEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -14,7 +16,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', 'min:8', 'confirmed', new StrongPassword()],
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
         ]);
@@ -31,11 +33,20 @@ class AuthController extends Controller
             'address' => $request->address,
         ]);
 
+        // Send welcome/confirmation email
+        try {
+            $user->notify(new WelcomeEmail($user->name));
+        } catch (\Exception $e) {
+            // Log the error but don't fail the registration
+            \Log::error('Failed to send welcome email: ' . $e->getMessage());
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
             'token' => $token,
+            'message' => 'Registration successful! A confirmation email has been sent to your email address.',
         ], 201);
     }
 

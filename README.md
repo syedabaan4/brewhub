@@ -4,7 +4,12 @@ A full-stack coffee ordering platform built with Next.js (frontend) and Laravel 
 
 ## 🚀 Features
 
-- **User Authentication:** Secure JWT-based authentication with registration and login
+- **User Authentication:** 
+  - Secure JWT-based authentication with registration and login
+  - Email uniqueness validation
+  - Strong password enforcement (uppercase, lowercase, numbers, special characters)
+  - Real-time password strength indicator
+  - Confirmation email on registration
 - **Product Menu:** Browse coffee products with category filtering
 - **Shopping Cart:** Add, update, and remove items from cart
 - **Checkout:** Place orders with mock payment system
@@ -171,9 +176,29 @@ The application features a modern coffee shop aesthetic with:
 
 ## 🧪 Testing
 
+### Registration User Story Testing
+
+The registration feature implements the following user story:
+
+**"As a customer, I want to register using my email and password so that I can create an account."**
+
+**Acceptance Criteria:**
+- ✅ Registration validates unique email
+- ✅ Weak passwords rejected
+- ✅ Confirmation email sent
+
+For detailed testing instructions, see:
+- **Testing Guide:** `TESTING_REGISTRATION.md`
+- **User Story Validation:** `USER_STORY_VALIDATION.md`
+- **Mail Setup:** `backend/MAIL_SETUP.md`
+
 ### Manual Testing Checklist
 
-- [ ] User can register with valid data
+- [x] User can register with valid data
+- [x] Duplicate emails are rejected
+- [x] Weak passwords are rejected with clear feedback
+- [x] Password strength indicator shows real-time validation
+- [x] Confirmation email is sent on registration
 - [ ] User can login with correct credentials
 - [ ] User can view products on menu page
 - [ ] User can filter products by category
