@@ -214,18 +214,5 @@ See `SETUP_INSTRUCTIONS.md` for more detailed troubleshooting.
 
 This project is open source and available for educational purposes.
 
-## 🤝 Contributing
 
-This is a demo project. Feel free to fork and customize for your needs.
-
-## 📧 Support
-
-For issues or questions, please refer to:
-- `SETUP_INSTRUCTIONS.md` - Detailed setup guide
-- `frontend/README.md` - Frontend documentation
-- `backend-template/README.md` - Backend documentation
-
----
-
-**Note:** This is an MVP (Minimum Viable Product) for demonstration purposes. The payment system is mocked and should be replaced with a real payment gateway for production use.
 
