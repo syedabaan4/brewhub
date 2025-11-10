@@ -1,0 +1,215 @@
+import { create } from 'zustand';
+import { User, Product, CartItem } from '@/types';
+import api from './api';
+import toast from 'react-hot-toast';
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (data: any) => Promise<void>;
+  logout: () => void;
+  loadUser: () => void;
+  updateProfile: (data: Partial<User>) => Promise<void>;
+}
+
+interface CartState {
+  items: CartItem[];
+  loading: boolean;
+  fetchCart: () => Promise<void>;
+  addToCart: (productId: string, quantity: number) => Promise<void>;
+  updateCartItem: (itemId: string, quantity: number) => Promise<void>;
+  removeFromCart: (itemId: string) => Promise<void>;
+  clearCart: () => Promise<void>;
+  getCartTotal: () => number;
+  getCartCount: () => number;
+}
+
+interface ProductState {
+  products: Product[];
+  loading: boolean;
+  fetchProducts: () => Promise<void>;
+}
+
+// Auth Store
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  token: null,
+  isAuthenticated: false,
+  loading: false,
+
+  login: async (email: string, password: string) => {
+    try {
+      set({ loading: true });
+      const response = await api.post('/login', { email, password });
+      const { user, token } = response.data;
+      
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      set({ user, token, isAuthenticated: true, loading: false });
+      toast.success('Login successful!');
+    } catch (error: any) {
+      set({ loading: false });
+      toast.error(error.response?.data?.message || 'Login failed');
+      throw error;
+    }
+  },
+
+  register: async (data: any) => {
+    try {
+      set({ loading: true });
+      const response = await api.post('/register', data);
+      const { user, token } = response.data;
+      
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      set({ user, token, isAuthenticated: true, loading: false });
+      toast.success('Registration successful!');
+    } catch (error: any) {
+      set({ loading: false });
+      
+      // Handle Laravel validation errors
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        const firstError = Object.values(errors)[0];
+        toast.error(Array.isArray(firstError) ? firstError[0] : firstError);
+      } else {
+        toast.error(error.response?.data?.message || 'Registration failed');
+      }
+      throw error;
+    }
+  },
+
+  logout: () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    set({ user: null, token: null, isAuthenticated: false });
+    toast.success('Logged out successfully');
+  },
+
+  loadUser: () => {
+    const token = localStorage.getItem('auth_token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        set({ user, token, isAuthenticated: true });
+      } catch (error) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+      }
+    }
+  },
+
+  updateProfile: async (data: Partial<User>) => {
+    try {
+      set({ loading: true });
+      const response = await api.put('/profile', data);
+      const updatedUser = response.data.user;
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      set({ user: updatedUser, loading: false });
+      toast.success('Profile updated successfully');
+    } catch (error: any) {
+      set({ loading: false });
+      toast.error(error.response?.data?.message || 'Update failed');
+      throw error;
+    }
+  },
+}));
+
+// Cart Store
+export const useCartStore = create<CartState>((set, get) => ({
+  items: [],
+  loading: false,
+
+  fetchCart: async () => {
+    try {
+      set({ loading: true });
+      const response = await api.get('/cart');
+      set({ items: response.data.items || [], loading: false });
+    } catch (error: any) {
+      set({ loading: false });
+      if (error.response?.status !== 401) {
+        toast.error('Failed to fetch cart');
+      }
+    }
+  },
+
+  addToCart: async (productId: string, quantity: number = 1) => {
+    try {
+      const response = await api.post('/cart/add', { product_id: productId, quantity });
+      set({ items: response.data.items || [] });
+      toast.success('Added to cart');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to add to cart');
+      throw error;
+    }
+  },
+
+  updateCartItem: async (itemId: string, quantity: number) => {
+    try {
+      const response = await api.put(`/cart/update/${itemId}`, { quantity });
+      set({ items: response.data.items || [] });
+      toast.success('Cart updated');
+    } catch (error: any) {
+      toast.error('Failed to update cart');
+      throw error;
+    }
+  },
+
+  removeFromCart: async (itemId: string) => {
+    try {
+      const response = await api.delete(`/cart/remove/${itemId}`);
+      set({ items: response.data.items || [] });
+      toast.success('Item removed from cart');
+    } catch (error: any) {
+      toast.error('Failed to remove item');
+      throw error;
+    }
+  },
+
+  clearCart: async () => {
+    try {
+      await api.delete('/cart/clear');
+      set({ items: [] });
+      toast.success('Cart cleared');
+    } catch (error: any) {
+      toast.error('Failed to clear cart');
+      throw error;
+    }
+  },
+
+  getCartTotal: () => {
+    const { items } = get();
+    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+  },
+
+  getCartCount: () => {
+    const { items } = get();
+    return items.reduce((count, item) => count + item.quantity, 0);
+  },
+}));
+
+// Product Store
+export const useProductStore = create<ProductState>((set) => ({
+  products: [],
+  loading: false,
+
+  fetchProducts: async () => {
+    try {
+      set({ loading: true });
+      const response = await api.get('/products');
+      set({ products: response.data, loading: false });
+    } catch (error) {
+      set({ loading: false });
+      toast.error('Failed to fetch products');
+    }
+  },
+}));
+
