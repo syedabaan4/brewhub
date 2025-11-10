@@ -1,243 +1,109 @@
-# ☕ Brewhub - Coffee Ordering Platform
+# ☕ Brewhub
 
-A full-stack coffee ordering platform built with Next.js (frontend) and Laravel (backend) using MongoDB Atlas as the database.
+A full-stack coffee ordering platform with Next.js, Laravel, and MongoDB Atlas.
 
-## 🚀 Features
+## Features
 
-- **User Authentication:** 
-  - Secure JWT-based authentication with registration and login
-  - Email uniqueness validation
-  - Strong password enforcement (uppercase, lowercase, numbers, special characters)
-  - Real-time password strength indicator
-  - Confirmation email on registration
-- **Product Menu:** Browse coffee products with category filtering
-- **Shopping Cart:** Add, update, and remove items from cart
-- **Checkout:** Place orders with mock payment system
-- **User Profile:** View and update profile information
-- **Responsive Design:** Modern coffee shop aesthetic with mobile-first approach
+- JWT authentication with email validation and password strength enforcement
+- Product menu with category filtering
+- Shopping cart and checkout
+- User profile management
+- Responsive design with coffee shop aesthetic
 
-## 📋 Tech Stack
+## Tech Stack
 
-### Frontend
-- **Framework:** Next.js 14+ (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **State Management:** Zustand
-- **HTTP Client:** Axios
-- **UI Notifications:** React Hot Toast
+**Frontend:** Next.js 14+ (TypeScript), Tailwind CSS, Zustand  
+**Backend:** Laravel 10+ (PHP 8.1+), MongoDB Atlas, Sanctum
 
-### Backend
-- **Framework:** Laravel 10+
-- **Language:** PHP 8.1+
-- **Database:** MongoDB Atlas
-- **Authentication:** Laravel Sanctum (JWT)
-- **ODM:** MongoDB Laravel Driver
+## Prerequisites
 
-## 📁 Project Structure
+- Node.js 18+, npm 10+
+- PHP 8.1+, Composer
+- MongoDB Atlas account
 
-```
-Brewhub/
-├── frontend/              # Next.js application
-│   ├── app/              # App router pages
-│   ├── components/       # Reusable components
-│   ├── lib/             # API client & stores
-│   └── types/           # TypeScript types
-├── backend-template/     # Laravel backend files (ready to use)
-│   ├── Models/          # MongoDB models
-│   ├── Controllers/     # API controllers
-│   ├── Routes/          # API routes
-│   ├── Config/          # Configuration files
-│   └── Seeders/         # Database seeders
-└── SETUP_INSTRUCTIONS.md # Detailed setup guide
-```
+## Quick Start
 
-## ⚙️ Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- **Node.js** 18+ (✅ Already installed)
-- **npm** 10+ (✅ Already installed)
-- **PHP** 8.1+ (❌ Not installed - required for backend)
-- **Composer** (❌ Not installed - required for backend)
-- **MongoDB Atlas** account (Free tier available)
-
-## 🛠️ Installation
-
-### Step 1: Install Missing Prerequisites
-
-**Install PHP:**
-- Download from: https://windows.php.net/download/
-- Extract to `C:\php` and add to PATH
-- Enable required extensions in `php.ini`
-
-**Install Composer:**
-- Download from: https://getcomposer.org/Composer-Setup.exe
-- Run the installer
-
-See `SETUP_INSTRUCTIONS.md` for detailed instructions.
-
-### Step 2: Set Up MongoDB Atlas
-
-1. Create a free account at https://cloud.mongodb.com
-2. Create a new cluster (Free M0 tier)
-3. Create a database user
-4. Whitelist your IP address
-5. Get the connection string
-
-### Step 3: Set Up Backend
+### Backend Setup
 
 ```bash
-# Create Laravel project
-composer create-project laravel/laravel backend
 cd backend
-
-# Install dependencies
-composer require mongodb/laravel-mongodb
-composer require laravel/sanctum
-
-# Copy template files from backend-template/
-# See backend-template/README.md for detailed instructions
-
-# Configure .env with MongoDB connection
-# Run seeders
+composer install
+# Configure .env with MongoDB connection string
 php artisan db:seed
-
-# Start backend server
-php artisan serve
+php artisan serve  # Runs on http://localhost:8000
 ```
 
-### Step 4: Set Up Frontend
+### Frontend Setup
 
 ```bash
 cd frontend
-
-# Create .env.local file
+npm install
 echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api" > .env.local
-
-# Start development server
-npm run dev
+npm run dev  # Runs on http://localhost:3000
 ```
 
-## 🚦 Running the Application
+## API Endpoints
 
-1. **Start the backend** (in one terminal):
-   ```bash
-   cd backend
-   php artisan serve
-   ```
-   Backend runs on: http://localhost:8000
+**Public:** `/api/register`, `/api/login`, `/api/products`  
+**Protected:** `/api/user`, `/api/cart`, `/api/orders`, `/api/profile`
 
-2. **Start the frontend** (in another terminal):
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-   Frontend runs on: http://localhost:3000
+See individual README files in `frontend/` and `backend/` for more details.
 
-3. **Open your browser** and navigate to http://localhost:3000
+## Project Structure
 
-## 📖 Usage
+```
+Brewhub/
+├── frontend/                    # Next.js Frontend
+│   ├── app/                     # App Router (Next.js 14+)
+│   │   ├── login/              # Login page
+│   │   ├── register/           # Registration page
+│   │   ├── menu/               # Product menu page
+│   │   ├── cart/               # Shopping cart page
+│   │   ├── checkout/           # Checkout page
+│   │   ├── profile/            # User profile page
+│   │   ├── layout.tsx          # Root layout with Navbar
+│   │   ├── page.tsx            # Home/landing page
+│   │   └── globals.css         # Global styles
+│   ├── components/             # Reusable React components
+│   │   └── Navbar.tsx          # Navigation bar
+│   ├── lib/                    # Utilities & client-side logic
+│   │   ├── api.ts              # Axios API client
+│   │   └── store.ts            # Zustand state stores
+│   ├── types/                  # TypeScript type definitions
+│   │   └── index.ts            # Shared types (User, Product, Cart, etc.)
+│   └── package.json            # Dependencies (Next.js, React, Zustand, Axios)
+│
+└── backend/                     # Laravel Backend API
+    ├── app/
+    │   ├── Http/Controllers/    # API Controllers
+    │   │   ├── AuthController.php       # Login, register, logout
+    │   │   ├── CartController.php       # Cart operations
+    │   │   ├── OrderController.php      # Order management
+    │   │   ├── ProductController.php    # Product listing
+    │   │   └── ProfileController.php    # User profile
+    │   ├── Models/              # MongoDB Models
+    │   │   ├── User.php         # User model with authentication
+    │   │   ├── Product.php      # Coffee products
+    │   │   ├── Cart.php         # Shopping cart items
+    │   │   └── Order.php        # Customer orders
+    │   ├── Rules/               # Custom validation rules
+    │   │   └── StrongPassword.php
+    │   └── Notifications/       # Email notifications
+    │       └── WelcomeEmail.php
+    ├── routes/
+    │   └── api.php              # API routes definition
+    ├── database/
+    │   ├── seeders/             # Database seeders
+    │   │   ├── ProductSeeder.php    # Sample products
+    │   │   └── DatabaseSeeder.php
+    │   └── database.sqlite      # Local SQLite (optional)
+    ├── config/
+    │   ├── database.php         # MongoDB connection config
+    │   ├── sanctum.php          # JWT authentication config
+    │   └── cors.php             # CORS configuration
+    └── composer.json            # Dependencies (Laravel, MongoDB, Sanctum)
+```
 
-1. **Sign Up:** Create a new account from the registration page
-2. **Login:** Log in with your credentials
-3. **Browse Menu:** View available coffee products, filter by category
-4. **Add to Cart:** Click "Add to Cart" on products you want to order
-5. **View Cart:** Check your cart and adjust quantities
-6. **Checkout:** Enter delivery address and place order
-7. **Profile:** Update your profile information
+## License
 
-## 🎨 Design
-
-The application features a modern coffee shop aesthetic with:
-- **Primary Color:** Coffee Brown (#6F4E37)
-- **Accent Color:** Cream (#D4A574)
-- **Background:** Light Cream (#FAF7F2)
-- Responsive design that works on mobile, tablet, and desktop
-
-## 📡 API Endpoints
-
-### Public
-- `POST /api/register` - User registration
-- `POST /api/login` - User login
-- `GET /api/products` - List products
-- `GET /api/categories` - List categories
-
-### Protected (Requires Authentication)
-- `GET /api/user` - Get current user
-- `POST /api/logout` - Logout
-- `GET /api/profile` - Get profile
-- `PUT /api/profile` - Update profile
-- `GET /api/cart` - Get cart
-- `POST /api/cart/add` - Add to cart
-- `PUT /api/cart/update/{id}` - Update cart item
-- `DELETE /api/cart/remove/{id}` - Remove from cart
-- `POST /api/orders` - Create order
-- `GET /api/orders` - List orders
-
-## 🧪 Testing
-
-### Registration User Story Testing
-
-The registration feature implements the following user story:
-
-**"As a customer, I want to register using my email and password so that I can create an account."**
-
-**Acceptance Criteria:**
-- ✅ Registration validates unique email
-- ✅ Weak passwords rejected
-- ✅ Confirmation email sent
-
-For detailed testing instructions, see:
-- **Testing Guide:** `TESTING_REGISTRATION.md`
-- **User Story Validation:** `USER_STORY_VALIDATION.md`
-- **Mail Setup:** `backend/MAIL_SETUP.md`
-
-### Manual Testing Checklist
-
-- [x] User can register with valid data
-- [x] Duplicate emails are rejected
-- [x] Weak passwords are rejected with clear feedback
-- [x] Password strength indicator shows real-time validation
-- [x] Confirmation email is sent on registration
-- [ ] User can login with correct credentials
-- [ ] User can view products on menu page
-- [ ] User can filter products by category
-- [ ] User can add products to cart
-- [ ] Cart displays correct items and quantities
-- [ ] User can update item quantities in cart
-- [ ] User can remove items from cart
-- [ ] User can proceed to checkout
-- [ ] User can place order with delivery address
-- [ ] Order confirmation is displayed
-- [ ] User can view and update profile
-
-## 🔧 Troubleshooting
-
-### Frontend Issues
-- **API connection errors:** Check that backend is running on port 8000
-- **CORS errors:** Verify CORS configuration in Laravel
-
-### Backend Issues
-- **MongoDB connection:** Check connection string in `.env`
-- **Class not found:** Run `composer dump-autoload`
-- **Sanctum errors:** Verify middleware configuration
-
-See `SETUP_INSTRUCTIONS.md` for more detailed troubleshooting.
-
-## 🚀 Future Enhancements
-
-- [ ] Order history page
-- [ ] Real payment integration (Stripe/PayPal)
-- [ ] Admin panel for product management
-- [ ] Real-time order tracking
-- [ ] Product reviews and ratings
-- [ ] Favorites/wishlist
-- [ ] Multiple delivery addresses
-- [ ] Order notifications
-
-## 📝 License
-
-This project is open source and available for educational purposes.
-
-
-
+Open source for educational purposes.
