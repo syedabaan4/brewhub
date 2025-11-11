@@ -12,6 +12,7 @@ export default function MenuPage() {
   const { addToCart } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const router = useRouter();
 
   useEffect(() => {
@@ -20,9 +21,17 @@ export default function MenuPage() {
 
   const categories = ['all', ...Array.from(new Set(products.map((p) => p.category)))];
 
-  const filteredProducts = selectedCategory === 'all'
-    ? products
-    : products.filter((p) => p.category === selectedCategory);
+  const filteredProducts = products.filter((product) => {
+    // Filter by category
+    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    
+    // Filter by search term (name or category)
+    const matchesSearch = searchTerm === '' || 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesCategory && matchesSearch;
+  });
 
   const handleAddToCart = async (productId: string) => {
     if (!isAuthenticated) {
@@ -44,6 +53,32 @@ export default function MenuPage() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-4xl font-bold text-[#2C1810] mb-8">Our Menu</h1>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search by name or category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#6F4E37] focus:border-transparent"
+            />
+            <svg
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+        </div>
 
         {/* Category Filter */}
         <div className="flex gap-2 mb-8 overflow-x-auto">
@@ -69,7 +104,14 @@ export default function MenuPage() {
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-xl text-gray-600">No products available</p>
+            <p className="text-xl text-gray-600 mb-2">
+              {searchTerm ? 'No products found matching your search' : 'No products available'}
+            </p>
+            {searchTerm && (
+              <p className="text-gray-500">
+                Try a different search term or clear the search box
+              </p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
