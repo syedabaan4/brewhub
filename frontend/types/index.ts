@@ -7,7 +7,7 @@ export interface User {
 }
 
 export interface Product {
-  _id: string;
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -24,14 +24,14 @@ export interface CartItem {
 }
 
 export interface Cart {
-  _id: string;
+  id: string;
   user_id: string;
   items: CartItem[];
   total: number;
 }
 
 export interface Order {
-  _id: string;
+  id: string;
   user_id: string;
   items: CartItem[];
   total_price: number;

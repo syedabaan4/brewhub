@@ -1,15 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useCartStore, useAuthStore } from '@/lib/store';
 
 export default function CartPage() {
   const { items, loading, fetchCart, updateCartItem, removeFromCart, getCartTotal } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,7 +23,14 @@ export default function CartPage() {
   }, [isAuthenticated, fetchCart, router]);
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
+    if (newQuantity < 0) return;
+    
+    // If quantity becomes 0, remove the item with confirmation
+    if (newQuantity === 0) {
+      handleRemoveItem(itemId);
+      return;
+    }
+    
     try {
       await updateCartItem(itemId, newQuantity);
     } catch (error) {
@@ -28,12 +38,26 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveItem = async (itemId: string) => {
+  const handleRemoveItem = (itemId: string) => {
+    setItemToRemove(itemId);
+    setIsModalOpen(true);
+  };
+
+  const confirmRemove = async () => {
+    if (!itemToRemove) return;
+    
     try {
-      await removeFromCart(itemId);
+      await removeFromCart(itemToRemove);
+      setIsModalOpen(false);
+      setItemToRemove(null);
     } catch (error) {
       // Error handled in store
     }
+  };
+
+  const cancelRemove = () => {
+    setIsModalOpen(false);
+    setItemToRemove(null);
   };
 
   if (!isAuthenticated) {
@@ -122,12 +146,29 @@ export default function CartPage() {
 
             {/* Cart Summary */}
             <div className="card p-6">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-xl font-semibold">Total:</span>
-                <span className="text-2xl font-bold text-[#6F4E37]">
-                  ${getCartTotal().toFixed(2)}
-                </span>
+              <h2 className="text-xl font-bold text-[#2C1810] mb-4">Order Summary</h2>
+              
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-gray-700">
+                  <span>Subtotal:</span>
+                  <span>${getCartTotal().toFixed(2)}</span>
+                </div>
+                
+                <div className="flex justify-between text-gray-700">
+                  <span>Tax (8%):</span>
+                  <span>${(getCartTotal() * 0.08).toFixed(2)}</span>
+                </div>
+                
+                <div className="border-t pt-2 mt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xl font-semibold text-[#2C1810]">Total:</span>
+                    <span className="text-2xl font-bold text-[#6F4E37]">
+                      ${(getCartTotal() * 1.08).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               </div>
+              
               <Link
                 href="/checkout"
                 className="btn-primary w-full text-center block"
@@ -138,6 +179,16 @@ export default function CartPage() {
           </>
         )}
       </main>
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        title="Remove Item"
+        message="Are you sure you want to remove this item from your cart?"
+        confirmText="Remove"
+        cancelText="Cancel"
+        onConfirm={confirmRemove}
+        onCancel={cancelRemove}
+      />
     </div>
   );
 }

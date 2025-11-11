@@ -74,7 +74,7 @@ export default function MenuPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <div key={product._id} className="card overflow-hidden">
+              <div key={product.id} className="card overflow-hidden">
                 <div className="aspect-square bg-[#F5E6D3] flex items-center justify-center">
                   {product.image_url ? (
                     <img
@@ -99,7 +99,7 @@ export default function MenuPage() {
                     </span>
                     {product.available ? (
                       <button
-                        onClick={() => handleAddToCart(product._id)}
+                        onClick={() => handleAddToCart(product.id)}
                         className="bg-[#6F4E37] hover:bg-[#5C3D2E] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                       >
                         Add to Cart

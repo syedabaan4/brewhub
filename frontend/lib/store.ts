@@ -145,9 +145,17 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       const response = await api.post('/cart/add', { product_id: productId, quantity });
       set({ items: response.data.items || [] });
-      toast.success('Added to cart');
+      toast.success('Item added to cart successfully!');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add to cart');
+      // Show specific validation errors if available
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        const firstError = Object.values(errors)[0];
+        const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+        toast.error(errorMessage as string);
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to add to cart');
+      }
       throw error;
     }
   },
@@ -156,9 +164,9 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       const response = await api.put(`/cart/update/${itemId}`, { quantity });
       set({ items: response.data.items || [] });
-      toast.success('Cart updated');
+      toast.success('Quantity updated successfully!');
     } catch (error: any) {
-      toast.error('Failed to update cart');
+      toast.error('Failed to update quantity');
       throw error;
     }
   },
@@ -167,7 +175,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       const response = await api.delete(`/cart/remove/${itemId}`);
       set({ items: response.data.items || [] });
-      toast.success('Item removed from cart');
+      toast.success('Item removed from cart successfully!');
     } catch (error: any) {
       toast.error('Failed to remove item');
       throw error;

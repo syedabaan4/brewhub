@@ -50,7 +50,7 @@ export default function CheckoutPage() {
         payment_status: 'paid', // Mock payment
       });
 
-      setOrderId(response.data._id);
+      setOrderId(response.data.id);
       await clearCart();
       setOrderCompleted(true);
       toast.success('Order placed successfully!');
