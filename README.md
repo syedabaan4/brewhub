@@ -89,7 +89,8 @@ Brewhub/
     │   ├── Rules/               # Custom validation rules
     │   │   └── StrongPassword.php
     │   └── Notifications/       # Email notifications
-    │       └── WelcomeEmail.php
+    │       ├── WelcomeEmail.php        # Welcome email on registration
+    │       └── OrderConfirmation.php   # Order confirmation email with details
     ├── routes/
     │   └── api.php              # API routes definition
     ├── database/

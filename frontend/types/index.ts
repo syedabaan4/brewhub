@@ -33,11 +33,14 @@ export interface Cart {
 export interface Order {
   id: string;
   user_id: string;
+  order_number: string;
   items: CartItem[];
   total_price: number;
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
   payment_status: 'pending' | 'paid' | 'failed';
-  delivery_address: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
   created_at: string;
 }
 
