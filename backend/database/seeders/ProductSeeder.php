@@ -12,7 +12,46 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        $coffeeAddons = [
+            [
+                'name' => 'Extra Shot',
+                'price' => 0.75,
+                'available' => true,
+            ],
+            [
+                'name' => 'Oat Milk',
+                'price' => 0.50,
+                'available' => true,
+            ],
+            [
+                'name' => 'Almond Milk',
+                'price' => 0.50,
+                'available' => true,
+            ],
+            [
+                'name' => 'Soy Milk',
+                'price' => 0.50,
+                'available' => false,
+            ],
+            [
+                'name' => 'Vanilla Syrup',
+                'price' => 0.60,
+                'available' => true,
+            ],
+            [
+                'name' => 'Caramel Syrup',
+                'price' => 0.60,
+                'available' => true,
+            ],
+            [
+                'name' => 'Hazelnut Syrup',
+                'price' => 0.60,
+                'available' => false,
+            ],
+        ];
+
         $products = [
+            // Hot Coffee
             [
                 'name' => 'Espresso',
                 'description' => 'Strong and bold shot of pure coffee excellence',
@@ -20,6 +59,7 @@ class ProductSeeder extends Seeder
                 'category' => 'hot',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
             [
                 'name' => 'Cappuccino',
@@ -28,6 +68,7 @@ class ProductSeeder extends Seeder
                 'category' => 'hot',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
             [
                 'name' => 'Latte',
@@ -36,6 +77,7 @@ class ProductSeeder extends Seeder
                 'category' => 'hot',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
             [
                 'name' => 'Americano',
@@ -44,6 +86,7 @@ class ProductSeeder extends Seeder
                 'category' => 'hot',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
             [
                 'name' => 'Mocha',
@@ -52,15 +95,17 @@ class ProductSeeder extends Seeder
                 'category' => 'hot',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
             [
-                'name' => 'Caramel Macchiato',
-                'description' => 'Espresso with vanilla-flavored syrup and caramel drizzle',
-                'price' => 5.99,
+                'name' => 'Flat White',
+                'description' => 'Espresso with microfoam for a velvety texture',
+                'price' => 4.99,
                 'category' => 'hot',
                 'image_url' => '',
-                'available' => true,
+                'available' => false,
             ],
+            // Cold Coffee
             [
                 'name' => 'Iced Coffee',
                 'description' => 'Chilled coffee served over ice',
@@ -68,6 +113,7 @@ class ProductSeeder extends Seeder
                 'category' => 'cold',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
             [
                 'name' => 'Cold Brew',
@@ -76,6 +122,7 @@ class ProductSeeder extends Seeder
                 'category' => 'cold',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
             [
                 'name' => 'Iced Latte',
@@ -84,6 +131,7 @@ class ProductSeeder extends Seeder
                 'category' => 'cold',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
             [
                 'name' => 'Frappuccino',
@@ -92,20 +140,55 @@ class ProductSeeder extends Seeder
                 'category' => 'cold',
                 'image_url' => '',
                 'available' => true,
+                'addons' => $coffeeAddons,
             ],
+            // Pastries
             [
-                'name' => 'Flat White',
-                'description' => 'Espresso with microfoam for a velvety texture',
-                'price' => 4.99,
-                'category' => 'hot',
+                'name' => 'Butter Croissant',
+                'description' => 'Flaky, buttery French pastry baked fresh daily',
+                'price' => 3.49,
+                'category' => 'pastries',
                 'image_url' => '',
                 'available' => true,
             ],
             [
-                'name' => 'Turkish Coffee',
-                'description' => 'Traditional coffee prepared in a cezve with fine grounds',
+                'name' => 'Chocolate Croissant',
+                'description' => 'Buttery croissant filled with rich dark chocolate',
+                'price' => 4.29,
+                'category' => 'pastries',
+                'image_url' => '',
+                'available' => true,
+            ],
+            [
+                'name' => 'Blueberry Muffin',
+                'description' => 'Moist muffin packed with fresh blueberries',
                 'price' => 3.99,
-                'category' => 'hot',
+                'category' => 'pastries',
+                'image_url' => '',
+                'available' => true,
+            ],
+            // Desserts
+            [
+                'name' => 'Tiramisu',
+                'description' => 'Classic Italian dessert with coffee-soaked ladyfingers',
+                'price' => 6.99,
+                'category' => 'desserts',
+                'image_url' => '',
+                'available' => true,
+            ],
+            [
+                'name' => 'Chocolate Brownie',
+                'description' => 'Rich, fudgy brownie with chocolate chunks',
+                'price' => 4.49,
+                'category' => 'desserts',
+                'image_url' => '',
+                'available' => true,
+            ],
+            [
+                'name' => 'Cheesecake',
+                'description' => 'Creamy New York style cheesecake with graham crust',
+                'price' => 6.49,
+                'category' => 'desserts',
                 'image_url' => '',
                 'available' => true,
             ],

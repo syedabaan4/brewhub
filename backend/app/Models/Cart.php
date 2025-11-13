@@ -27,7 +27,16 @@ class Cart extends Model
     {
         $total = 0;
         foreach ($this->items as $item) {
-            $total += $item['price'] * $item['quantity'];
+            $itemTotal = $item['price'] * $item['quantity'];
+            
+            // Add selected add-ons price if they exist
+            if (isset($item['selected_addons']) && is_array($item['selected_addons'])) {
+                foreach ($item['selected_addons'] as $addon) {
+                    $itemTotal += $addon['price'] * $item['quantity'];
+                }
+            }
+            
+            $total += $itemTotal;
         }
         return $total;
     }

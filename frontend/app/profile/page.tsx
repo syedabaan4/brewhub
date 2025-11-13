@@ -318,17 +318,41 @@ export default function ProfilePage() {
                       <h4 className="text-sm font-semibold mb-2 text-gray-700">
                         Order Items:
                       </h4>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {order.items.map((item: any, index) => (
                           <div
                             key={index}
-                            className="flex justify-between text-sm"
+                            className="flex justify-between text-sm items-start"
                           >
-                            <span className="text-gray-700">
-                              {item.quantity}x {item.product_name || item.product?.name || 'Item'}
-                            </span>
-                            <span className="text-gray-600">
-                              ${(item.price * item.quantity).toFixed(2)}
+                            <div className="flex-1">
+                              <span className="text-gray-700 font-medium">
+                                {item.quantity}x {item.product_name || item.product?.name || 'Item'}
+                              </span>
+                              {/* Display selected add-ons */}
+                              {item.selected_addons && item.selected_addons.length > 0 && (
+                                <div className="mt-1">
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.selected_addons.map((addon: any, idx: number) => (
+                                      <span
+                                        key={idx}
+                                        className="text-xs bg-[#F5E6D3] text-[#6F4E37] px-2 py-0.5 rounded"
+                                      >
+                                        {addon.name} (+${addon.price.toFixed(2)})
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-gray-600 ml-2">
+                              ${(() => {
+                                let total = item.price * item.quantity;
+                                if (item.selected_addons && item.selected_addons.length > 0) {
+                                  const addonsTotal = item.selected_addons.reduce((sum: number, addon: any) => sum + addon.price, 0);
+                                  total += addonsTotal * item.quantity;
+                                }
+                                return total.toFixed(2);
+                              })()}
                             </span>
                           </div>
                         ))}

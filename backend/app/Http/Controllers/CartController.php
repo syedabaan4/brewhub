@@ -20,21 +20,50 @@ class CartController extends Controller
             ]);
         }
 
-        // Populate product details
+        // Populate product details and filter out unavailable items
         $items = [];
-        foreach ($cart->items as $item) {
+        $removedItems = [];
+        $cartItems = $cart->items;
+        $updatedCartItems = [];
+        
+        foreach ($cartItems as $item) {
             $product = Product::find($item['product_id']);
-            if ($product) {
-                $items[] = [
+            
+            // Only include items where product exists and is available
+            if ($product && $product->available) {
+                $cartItem = [
                     'product_id' => $item['product_id'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                     'product' => $product,
                 ];
+                
+                // Include selected add-ons if they exist
+                if (isset($item['selected_addons'])) {
+                    $cartItem['selectedAddons'] = $item['selected_addons'];
+                }
+                
+                $items[] = $cartItem;
+                $updatedCartItems[] = $item;
+            } else {
+                // Track removed items for notification
+                if ($product) {
+                    $removedItems[] = $product->name;
+                }
             }
         }
+        
+        // Update cart if items were removed
+        if (count($updatedCartItems) !== count($cartItems)) {
+            $cart->items = $updatedCartItems;
+            $cart->save();
+        }
 
-        return response()->json(['items' => $items, 'total' => $cart->calculateTotal()]);
+        return response()->json([
+            'items' => $items, 
+            'total' => $cart->calculateTotal(),
+            'removed_items' => $removedItems
+        ]);
     }
 
     public function add(Request $request)
@@ -42,6 +71,7 @@ class CartController extends Controller
         $validator = Validator::make($request->all(), [
             'product_id' => 'required|string',
             'quantity' => 'required|integer|min:1',
+            'selected_addons' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -64,11 +94,18 @@ class CartController extends Controller
         }
 
         $items = $cart->items;
+        $selectedAddons = $request->selected_addons ?? [];
+        
+        // Create a unique key for items with same product but different add-ons
+        $newItemKey = $request->product_id . '_' . json_encode($selectedAddons);
         $found = false;
 
-        // Check if product already in cart
-        foreach ($items as &$item) {
-            if ($item['product_id'] === $request->product_id) {
+        // Check if same product with same add-ons already in cart
+        foreach ($items as $index => &$item) {
+            $itemAddons = $item['selected_addons'] ?? [];
+            $itemKey = $item['product_id'] . '_' . json_encode($itemAddons);
+            
+            if ($itemKey === $newItemKey) {
                 $item['quantity'] += $request->quantity;
                 $found = true;
                 break;
@@ -77,11 +114,18 @@ class CartController extends Controller
 
         // Add new item if not found
         if (!$found) {
-            $items[] = [
+            $newItem = [
                 'product_id' => $request->product_id,
                 'quantity' => $request->quantity,
                 'price' => $product->price,
             ];
+            
+            // Add selected add-ons if provided
+            if (!empty($selectedAddons)) {
+                $newItem['selected_addons'] = $selectedAddons;
+            }
+            
+            $items[] = $newItem;
         }
 
         $cart->items = $items;

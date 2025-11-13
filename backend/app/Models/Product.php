@@ -16,11 +16,13 @@ class Product extends Model
         'category',
         'image_url',
         'available',
+        'addons',
     ];
 
     protected $casts = [
         'price' => 'float',
         'available' => 'boolean',
+        'addons' => 'array',
     ];
 }
 

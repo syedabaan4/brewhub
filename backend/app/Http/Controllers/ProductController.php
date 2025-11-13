@@ -9,7 +9,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::where('available', true)->get();
+        $products = Product::all();
         return response()->json($products);
     }
 

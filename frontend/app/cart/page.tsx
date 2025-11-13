@@ -103,9 +103,26 @@ export default function CartPage() {
                     <h3 className="text-lg font-semibold text-[#2C1810]">
                       {item.product.name}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-2">
+                    <p className="text-gray-600 text-sm mb-1">
                       ${item.price.toFixed(2)} each
                     </p>
+                    
+                    {/* Display selected add-ons */}
+                    {item.selectedAddons && item.selectedAddons.length > 0 && (
+                      <div className="mb-2">
+                        <p className="text-xs text-gray-500 mb-1">Add-ons:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {item.selectedAddons.map((addon, idx) => (
+                            <span
+                              key={idx}
+                              className="text-xs bg-[#F5E6D3] text-[#6F4E37] px-2 py-0.5 rounded"
+                            >
+                              {addon.name} (+${addon.price.toFixed(2)})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
@@ -137,7 +154,14 @@ export default function CartPage() {
 
                   <div className="text-right">
                     <p className="text-lg font-bold text-[#6F4E37]">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ${(() => {
+                        let total = item.price * item.quantity;
+                        if (item.selectedAddons && item.selectedAddons.length > 0) {
+                          const addonsTotal = item.selectedAddons.reduce((sum, addon) => sum + addon.price, 0);
+                          total += addonsTotal * item.quantity;
+                        }
+                        return total.toFixed(2);
+                      })()}
                     </p>
                   </div>
                 </div>

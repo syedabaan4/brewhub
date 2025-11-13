@@ -48,7 +48,19 @@ class OrderConfirmation extends Notification
         // Add order items
         foreach ($this->order->items as $item) {
             $itemTotal = $item['price'] * $item['quantity'];
-            $mailMessage->line('• ' . $item['quantity'] . 'x ' . ($item['product_name'] ?? 'Item') . ' - $' . number_format($itemTotal, 2));
+            
+            // Add selected add-ons to the total
+            $addonsList = '';
+            if (isset($item['selected_addons']) && is_array($item['selected_addons']) && count($item['selected_addons']) > 0) {
+                $addonsNames = [];
+                foreach ($item['selected_addons'] as $addon) {
+                    $itemTotal += $addon['price'] * $item['quantity'];
+                    $addonsNames[] = $addon['name'] . ' (+$' . number_format($addon['price'], 2) . ')';
+                }
+                $addonsList = ' [' . implode(', ', $addonsNames) . ']';
+            }
+            
+            $mailMessage->line('• ' . $item['quantity'] . 'x ' . ($item['product_name'] ?? 'Item') . $addonsList . ' - $' . number_format($itemTotal, 2));
         }
 
         $mailMessage

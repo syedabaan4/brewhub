@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import AddOnModal from '@/components/AddOnModal';
 import { useProductStore, useCartStore, useAuthStore } from '@/lib/store';
-import { Product } from '@/types';
+import { Product, AddOn } from '@/types';
 import toast from 'react-hot-toast';
 
 export default function MenuPage() {
@@ -13,6 +14,8 @@ export default function MenuPage() {
   const { isAuthenticated } = useAuthStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -33,15 +36,32 @@ export default function MenuPage() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (product: Product) => {
     if (!isAuthenticated) {
       toast.error('Please login to add items to cart');
       router.push('/login');
       return;
     }
 
+    // If product has add-ons, show modal
+    if (product.addons && product.addons.length > 0) {
+      setSelectedProduct(product);
+      setIsModalOpen(true);
+    } else {
+      // No add-ons, add directly to cart
+      try {
+        await addToCart(product.id, 1);
+      } catch (error) {
+        // Error handled in store
+      }
+    }
+  };
+
+  const handleAddToCartWithAddons = async (selectedAddons: AddOn[], quantity: number) => {
+    if (!selectedProduct) return;
+
     try {
-      await addToCart(productId, 1);
+      await addToCart(selectedProduct.id, quantity, selectedAddons);
     } catch (error) {
       // Error handled in store
     }
@@ -116,8 +136,11 @@ export default function MenuPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <div key={product.id} className="card overflow-hidden">
-                <div className="aspect-square bg-[#F5E6D3] flex items-center justify-center">
+              <div 
+                key={product.id} 
+                className={`card overflow-hidden ${!product.available ? 'opacity-60' : ''}`}
+              >
+                <div className="relative aspect-square bg-[#F5E6D3] flex items-center justify-center">
                   {product.image_url ? (
                     <img
                       src={product.image_url}
@@ -127,29 +150,39 @@ export default function MenuPage() {
                   ) : (
                     <span className="text-6xl">☕</span>
                   )}
+                  {!product.available && (
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                      <span className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow-lg">
+                        Out of Stock
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold text-[#2C1810] mb-1">
+                  <h3 className={`text-lg font-semibold mb-1 ${!product.available ? 'text-gray-500' : 'text-[#2C1810]'}`}>
                     {product.name}
                   </h3>
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                     {product.description}
                   </p>
                   <div className="flex justify-between items-center">
-                    <span className="text-xl font-bold text-[#6F4E37]">
+                    <span className={`text-xl font-bold ${!product.available ? 'text-gray-400' : 'text-[#6F4E37]'}`}>
                       ${product.price.toFixed(2)}
                     </span>
                     {product.available ? (
                       <button
-                        onClick={() => handleAddToCart(product.id)}
+                        onClick={() => handleAddToCart(product)}
                         className="bg-[#6F4E37] hover:bg-[#5C3D2E] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                       >
                         Add to Cart
                       </button>
                     ) : (
-                      <span className="text-red-500 text-sm font-medium">
-                        Out of Stock
-                      </span>
+                      <button
+                        disabled
+                        className="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg text-sm font-medium cursor-not-allowed"
+                      >
+                        Unavailable
+                      </button>
                     )}
                   </div>
                 </div>
@@ -158,6 +191,16 @@ export default function MenuPage() {
           </div>
         )}
       </main>
+
+      {/* Add-On Modal */}
+      {selectedProduct && (
+        <AddOnModal
+          product={selectedProduct}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onAddToCart={handleAddToCartWithAddons}
+        />
+      )}
     </div>
   );
 }

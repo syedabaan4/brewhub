@@ -6,6 +6,12 @@ export interface User {
   address?: string;
 }
 
+export interface AddOn {
+  name: string;
+  price: number;
+  available: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -14,6 +20,7 @@ export interface Product {
   category: string;
   image_url: string;
   available: boolean;
+  addons?: AddOn[];
 }
 
 export interface CartItem {
@@ -21,6 +28,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   price: number;
+  selectedAddons?: AddOn[];
 }
 
 export interface Cart {

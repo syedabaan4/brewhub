@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, Product, CartItem } from '@/types';
+import { User, Product, CartItem, AddOn } from '@/types';
 import api from './api';
 import toast from 'react-hot-toast';
 
@@ -19,7 +19,7 @@ interface CartState {
   items: CartItem[];
   loading: boolean;
   fetchCart: () => Promise<void>;
-  addToCart: (productId: string, quantity: number) => Promise<void>;
+  addToCart: (productId: string, quantity: number, selectedAddons?: AddOn[]) => Promise<void>;
   updateCartItem: (itemId: string, quantity: number) => Promise<void>;
   removeFromCart: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -133,6 +133,14 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ loading: true });
       const response = await api.get('/cart');
       set({ items: response.data.items || [], loading: false });
+      
+      // Notify user if any items were removed due to unavailability
+      if (response.data.removed_items && response.data.removed_items.length > 0) {
+        const removedNames = response.data.removed_items.join(', ');
+        toast.error(`Some items are no longer available and were removed from your cart: ${removedNames}`, {
+          duration: 5000,
+        });
+      }
     } catch (error: any) {
       set({ loading: false });
       if (error.response?.status !== 401) {
@@ -141,10 +149,23 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
 
-  addToCart: async (productId: string, quantity: number = 1) => {
+  addToCart: async (productId: string, quantity: number = 1, selectedAddons?: AddOn[]) => {
     try {
-      const response = await api.post('/cart/add', { product_id: productId, quantity });
+      const response = await api.post('/cart/add', { 
+        product_id: productId, 
+        quantity,
+        selected_addons: selectedAddons || []
+      });
       set({ items: response.data.items || [] });
+      
+      // Check for removed items
+      if (response.data.removed_items && response.data.removed_items.length > 0) {
+        const removedNames = response.data.removed_items.join(', ');
+        toast.error(`Some items are no longer available and were removed from your cart: ${removedNames}`, {
+          duration: 5000,
+        });
+      }
+      
       toast.success('Item added to cart successfully!');
     } catch (error: any) {
       // Show specific validation errors if available
@@ -164,6 +185,15 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       const response = await api.put(`/cart/update/${itemId}`, { quantity });
       set({ items: response.data.items || [] });
+      
+      // Check for removed items
+      if (response.data.removed_items && response.data.removed_items.length > 0) {
+        const removedNames = response.data.removed_items.join(', ');
+        toast.error(`Some items are no longer available and were removed from your cart: ${removedNames}`, {
+          duration: 5000,
+        });
+      }
+      
       toast.success('Quantity updated successfully!');
     } catch (error: any) {
       toast.error('Failed to update quantity');
@@ -175,6 +205,15 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       const response = await api.delete(`/cart/remove/${itemId}`);
       set({ items: response.data.items || [] });
+      
+      // Check for removed items
+      if (response.data.removed_items && response.data.removed_items.length > 0) {
+        const removedNames = response.data.removed_items.join(', ');
+        toast.error(`Some items are no longer available and were removed from your cart: ${removedNames}`, {
+          duration: 5000,
+        });
+      }
+      
       toast.success('Item removed from cart successfully!');
     } catch (error: any) {
       toast.error('Failed to remove item');
@@ -195,7 +234,17 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   getCartTotal: () => {
     const { items } = get();
-    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return items.reduce((total, item) => {
+      let itemTotal = item.price * item.quantity;
+      
+      // Add selected add-ons price if they exist
+      if (item.selectedAddons && item.selectedAddons.length > 0) {
+        const addonsTotal = item.selectedAddons.reduce((sum, addon) => sum + addon.price, 0);
+        itemTotal += addonsTotal * item.quantity;
+      }
+      
+      return total + itemTotal;
+    }, 0);
   },
 
   getCartCount: () => {

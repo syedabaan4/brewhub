@@ -77,6 +77,7 @@ export default function CheckoutPage() {
           product_id: item.product_id,
           quantity: item.quantity,
           price: item.price,
+          selected_addons: item.selectedAddons || [],
         })),
         total_price: getCartTotal(),
         customer_name: customerName,
@@ -129,14 +130,36 @@ export default function CheckoutPage() {
               <div className="space-y-3">
                 {completedOrder.items?.map((item: any, index: number) => (
                   <div key={index} className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium">{item.product_name || 'Item'}</p>
                       <p className="text-sm text-gray-600">
                         Qty: {item.quantity} × ${item.price.toFixed(2)}
                       </p>
+                      {/* Display selected add-ons */}
+                      {item.selected_addons && item.selected_addons.length > 0 && (
+                        <div className="mt-1">
+                          <div className="flex flex-wrap gap-1">
+                            {item.selected_addons.map((addon: any, idx: number) => (
+                              <span
+                                key={idx}
+                                className="text-xs bg-[#F5E6D3] text-[#6F4E37] px-2 py-0.5 rounded"
+                              >
+                                {addon.name} (+${addon.price.toFixed(2)})
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <p className="font-semibold">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ${(() => {
+                        let total = item.price * item.quantity;
+                        if (item.selected_addons && item.selected_addons.length > 0) {
+                          const addonsTotal = item.selected_addons.reduce((sum: number, addon: any) => sum + addon.price, 0);
+                          total += addonsTotal * item.quantity;
+                        }
+                        return total.toFixed(2);
+                      })()}
                     </p>
                   </div>
                 ))}
@@ -208,14 +231,36 @@ export default function CheckoutPage() {
                 <div className="space-y-4 mb-4">
                   {items.map((item) => (
                     <div key={item.product_id} className="flex justify-between">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium">{item.product.name}</p>
                         <p className="text-sm text-gray-600">
                           Qty: {item.quantity} × ${item.price.toFixed(2)}
                         </p>
+                        {/* Display selected add-ons */}
+                        {item.selectedAddons && item.selectedAddons.length > 0 && (
+                          <div className="mt-1">
+                            <div className="flex flex-wrap gap-1">
+                              {item.selectedAddons.map((addon, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs bg-[#F5E6D3] text-[#6F4E37] px-2 py-0.5 rounded"
+                                >
+                                  {addon.name} (+${addon.price.toFixed(2)})
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <p className="font-semibold">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ${(() => {
+                          let total = item.price * item.quantity;
+                          if (item.selectedAddons && item.selectedAddons.length > 0) {
+                            const addonsTotal = item.selectedAddons.reduce((sum, addon) => sum + addon.price, 0);
+                            total += addonsTotal * item.quantity;
+                          }
+                          return total.toFixed(2);
+                        })()}
                       </p>
                     </div>
                   ))}

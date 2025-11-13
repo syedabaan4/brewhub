@@ -5,8 +5,10 @@ A full-stack coffee ordering platform with Next.js, Laravel, and MongoDB Atlas.
 ## Features
 
 - JWT authentication with email validation and password strength enforcement
-- Product menu with category filtering
-- Shopping cart and checkout
+- Product menu with category filtering and availability status
+- Drink customization with add-ons (extra shot, milk alternatives, syrups)
+- Shopping cart and checkout with add-on support
+- Order history and confirmation emails
 - User profile management
 - Responsive design with coffee shop aesthetic
 
@@ -65,7 +67,9 @@ Brewhub/
 │   │   ├── page.tsx            # Home/landing page
 │   │   └── globals.css         # Global styles
 │   ├── components/             # Reusable React components
-│   │   └── Navbar.tsx          # Navigation bar
+│   │   ├── Navbar.tsx          # Navigation bar
+│   │   ├── AddOnModal.tsx      # Add-ons selection modal for drink customization
+│   │   └── ConfirmModal.tsx    # Confirmation dialog for actions
 │   ├── lib/                    # Utilities & client-side logic
 │   │   ├── api.ts              # Axios API client
 │   │   └── store.ts            # Zustand state stores
