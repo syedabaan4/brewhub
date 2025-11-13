@@ -31,7 +31,6 @@ A full-stack coffee ordering platform with Next.js, Laravel, and MongoDB Atlas.
 cd backend
 composer install
 # Configure .env with MongoDB connection string
-php artisan db:seed
 php artisan serve  # Runs on http://localhost:8000
 ```
 
