@@ -1,19 +1,39 @@
 # ============================
-# 1) Build Stage (Composer)
+# 1) Build Stage (Installer)
 # ============================
-FROM composer:2 AS vendor
+FROM php:8.2-fpm AS build
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libpng-dev \
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions required BEFORE composer install
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+
+# Install MongoDB extension
+RUN pecl install mongodb && docker-php-ext-enable mongodb
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
 COPY composer.json composer.lock ./
+
 RUN composer install --no-dev --optimize-autoloader --prefer-dist
 
 # ============================
-# 2) App Stage (PHP-FPM + Nginx)
+# 2) Production Stage
 # ============================
 FROM php:8.2-fpm
 
-# Install system dependencies
+# Install system dependencies including nginx and supervisor
 RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
@@ -25,20 +45,19 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
+# PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Install MongoDB extension (if needed)
+# MongoDB extension
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
-# Setup working directory
 WORKDIR /var/www/html
 
-# Copy app code
+# Copy application code
 COPY . .
 
-# Copy vendor files from build stage
-COPY --from=vendor /app/vendor ./vendor
+# Copy vendor from build stage
+COPY --from=build /app/vendor ./vendor
 
 # Laravel optimizations
 RUN php artisan config:cache && \
@@ -46,22 +65,17 @@ RUN php artisan config:cache && \
     php artisan view:cache && \
     php artisan event:cache
 
-# Set proper permissions
+# Permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 storage bootstrap/cache
 
-# ============================
-# Nginx configuration
-# ============================
+# Nginx config
 RUN rm /etc/nginx/sites-enabled/default
 COPY ./deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
-# ============================
-# Supervisor configuration
-# ============================
+# Supervisor config
 COPY ./deploy/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 
-# Railway exposes this
 ARG PORT=8080
 ENV PORT=${PORT}
 
