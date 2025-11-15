@@ -3,30 +3,23 @@
 # ============================
 FROM php:8.2-fpm AS build
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    libpng-dev \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
+    git unzip libpng-dev libzip-dev libonig-dev libxml2-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions required BEFORE composer install
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Install MongoDB extension
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
-# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
+# Copy full project so artisan exists
+COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --prefer-dist
+
 
 # ============================
 # 2) Production Stage
