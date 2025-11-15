@@ -1,42 +1,44 @@
-# backend/Dockerfile
+# ============================
+# 1) Build Stage (Composer)
+# ============================
+FROM composer:2 AS vendor
+
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --prefer-dist
+
+# ============================
+# 2) App Stage (PHP-FPM + Nginx)
+# ============================
 FROM php:8.2-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
     git \
-    curl \
+    unzip \
     libpng-dev \
+    libzip-dev \
     libonig-dev \
     libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Install MongoDB extension
+# Install MongoDB extension (if needed)
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set working directory
+# Setup working directory
 WORKDIR /var/www/html
 
-# Copy composer files first (for better caching)
-COPY composer.json composer.lock ./
-
-# Install production dependencies
-RUN composer install --optimize-autoloader --no-dev --no-scripts --no-interaction --prefer-dist
-
-# Copy entire app
+# Copy app code
 COPY . .
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 storage bootstrap/cache
+# Copy vendor files from build stage
+COPY --from=vendor /app/vendor ./vendor
 
 # Laravel optimizations
 RUN php artisan config:cache && \
@@ -44,9 +46,25 @@ RUN php artisan config:cache && \
     php artisan view:cache && \
     php artisan event:cache
 
-# Optional: Run migrations
-# RUN php artisan migrate --force || true
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 storage bootstrap/cache
 
-EXPOSE $PORT
+# ============================
+# Nginx configuration
+# ============================
+RUN rm /etc/nginx/sites-enabled/default
+COPY ./deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+# ============================
+# Supervisor configuration
+# ============================
+COPY ./deploy/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+
+# Railway exposes this
+ARG PORT=8080
+ENV PORT=${PORT}
+
+EXPOSE ${PORT}
+
+CMD ["/usr/bin/supervisord"]
