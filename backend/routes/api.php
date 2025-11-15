@@ -20,35 +20,48 @@ use App\Http\Controllers\ProfileController;
 */
 
 // Public routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post("/register", [AuthController::class, "register"]);
+Route::post("/login", [AuthController::class, "login"]);
 
 // Product routes (public)
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
-Route::get('/categories', [ProductController::class, 'categories']);
-
-// Protected routes
-Route::middleware('auth:sanctum')->group(function () {
-    // Auth routes
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
-
-    // Profile routes
-    Route::get('/profile', [ProfileController::class, 'show']);
-    Route::put('/profile', [ProfileController::class, 'update']);
-
-    // Cart routes
-    Route::get('/cart', [CartController::class, 'index']);
-    Route::post('/cart/add', [CartController::class, 'add']);
-    Route::put('/cart/update/{productId}', [CartController::class, 'update']);
-    Route::delete('/cart/remove/{productId}', [CartController::class, 'remove']);
-    Route::delete('/cart/clear', [CartController::class, 'clear']);
-
-    // Order routes
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::post('/orders', [OrderController::class, 'store']);
-    Route::get('/orders/{id}', [OrderController::class, 'show']);
-    Route::put('/orders/{id}', [OrderController::class, 'update']); // For admin status updates
+Route::get("/products", [ProductController::class, "index"]);
+Route::get("/products/{id}", [ProductController::class, "show"]);
+Route::get("/categories", [ProductController::class, "categories"]);
+Route::get("/health", function () {
+    return response()->json(
+        [
+            "status" => "healthy",
+            "timestamp" => now()->toIso8601String(),
+            "service" => "brewhub-api",
+            "php_version" => PHP_VERSION,
+        ],
+        200,
+    );
 });
 
+// Protected routes
+Route::middleware("auth:sanctum")->group(function () {
+    // Auth routes
+    Route::post("/logout", [AuthController::class, "logout"]);
+    Route::get("/user", [AuthController::class, "user"]);
+
+    // Profile routes
+    Route::get("/profile", [ProfileController::class, "show"]);
+    Route::put("/profile", [ProfileController::class, "update"]);
+
+    // Cart routes
+    Route::get("/cart", [CartController::class, "index"]);
+    Route::post("/cart/add", [CartController::class, "add"]);
+    Route::put("/cart/update/{productId}", [CartController::class, "update"]);
+    Route::delete("/cart/remove/{productId}", [
+        CartController::class,
+        "remove",
+    ]);
+    Route::delete("/cart/clear", [CartController::class, "clear"]);
+
+    // Order routes
+    Route::get("/orders", [OrderController::class, "index"]);
+    Route::post("/orders", [OrderController::class, "store"]);
+    Route::get("/orders/{id}", [OrderController::class, "show"]);
+    Route::put("/orders/{id}", [OrderController::class, "update"]); // For admin status updates
+});
