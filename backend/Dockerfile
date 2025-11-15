@@ -49,4 +49,4 @@ RUN php artisan config:cache && \
 
 EXPOSE $PORT
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT}"]
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
