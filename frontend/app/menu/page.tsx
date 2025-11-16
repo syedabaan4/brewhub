@@ -252,14 +252,7 @@ export default function MenuPage() {
                     </div>
                   )}
 
-                  {/* Category Badge */}
-                  <div className="absolute top-1.5 sm:top-3 lg:top-4 left-1.5 sm:left-3 lg:left-4">
-                    <div className="bg-[#F7F7F5] px-1 py-0.5 sm:px-2.5 sm:py-1 lg:px-3 lg:py-1.5 inline-block">
-                      <span className="text-[#121212] font-bold text-[7px] sm:text-[9px] lg:text-[10px] tracking-[0.12em] uppercase opacity-60 whitespace-nowrap">
-                        {product.category}
-                      </span>
-                    </div>
-                  </div>
+                  
                 </div>
 
                 {/* Product Details */}
