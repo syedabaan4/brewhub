@@ -97,15 +97,15 @@ export default function MenuPage() {
               >
                 Discover
                 <br />
-                your Brew
+                your Brew.
               </h1>
               <p
                 className="text-sm sm:text-base text-[#121212] opacity-70 max-w-md leading-relaxed"
                 style={{ lineHeight: "1.7" }}
               >
-                handcrafted beverages made with passion, sourced from
+                Handcrafted beverages made with passion, sourced from
                 <br />
-                the finest ingredients
+                the finest ingredients.
               </p>
             </div>
 
@@ -213,7 +213,7 @@ export default function MenuPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-7">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-5 lg:gap-7">
             {filteredProducts.map((product, index) => (
               <div
                 key={product.id}
@@ -225,9 +225,9 @@ export default function MenuPage() {
                   boxShadow: "0px 4px 12px rgba(0,0,0,0.06)",
                 }}
               >
-                {/* Product Image - Compact for mobile */}
+                {/* Product Image - Very compact for mobile */}
                 <div
-                  className="relative aspect-[4/2.5] sm:aspect-[4/3.5] lg:aspect-[4/4] flex items-center justify-center overflow-hidden"
+                  className="relative aspect-[4/2.2] sm:aspect-[4/3.5] lg:aspect-[4/4] flex items-center justify-center overflow-hidden"
                   style={{ backgroundColor: getAccentColor(index) }}
                 >
                   {product.image_url ? (
@@ -237,15 +237,15 @@ export default function MenuPage() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="text-[60px] sm:text-[80px] lg:text-[100px] opacity-15 select-none">
+                    <div className="text-[40px] sm:text-[80px] lg:text-[100px] opacity-15 select-none">
                       ☕
                     </div>
                   )}
 
                   {!product.available && (
                     <div className="absolute inset-0 bg-[#121212] bg-opacity-40 flex items-center justify-center">
-                      <div className="bg-[#121212] px-3 sm:px-4 py-1.5 sm:py-2">
-                        <span className="text-[#F7F7F5] font-black text-[9px] sm:text-[10px] tracking-[0.2em]">
+                      <div className="bg-[#121212] px-2 sm:px-4 py-1 sm:py-2">
+                        <span className="text-[#F7F7F5] font-black text-[8px] sm:text-[10px] tracking-[0.15em]">
                           SOLD OUT
                         </span>
                       </div>
@@ -253,9 +253,9 @@ export default function MenuPage() {
                   )}
 
                   {/* Category Badge */}
-                  <div className="absolute top-2 sm:top-3 lg:top-4 left-2 sm:left-3 lg:left-4">
-                    <div className="bg-[#F7F7F5] px-2 sm:px-2.5 lg:px-3 py-0.5 sm:py-1 lg:py-1.5">
-                      <span className="text-[#121212] font-bold text-[8px] sm:text-[9px] lg:text-[10px] tracking-[0.15em] uppercase opacity-60">
+                  <div className="absolute top-1.5 sm:top-3 lg:top-4 left-1.5 sm:left-3 lg:left-4">
+                    <div className="bg-[#F7F7F5] px-1.5 sm:px-2.5 lg:px-3 py-0.5 sm:py-1 lg:py-1.5">
+                      <span className="text-[#121212] font-bold text-[7px] sm:text-[9px] lg:text-[10px] tracking-[0.12em] uppercase opacity-60">
                         {product.category}
                       </span>
                     </div>
@@ -263,9 +263,9 @@ export default function MenuPage() {
                 </div>
 
                 {/* Product Details */}
-                <div className="p-3 sm:p-4 lg:p-5 flex flex-col min-h-[150px] sm:min-h-[180px] lg:min-h-[220px]">
+                <div className="p-2 sm:p-4 lg:p-5 flex flex-col min-h-[110px] sm:min-h-[180px] lg:min-h-[220px]">
                   <h3
-                    className={`text-base sm:text-lg lg:text-xl font-bold mb-1 sm:mb-1.5 lg:mb-2 leading-tight ${
+                    className={`text-xs sm:text-lg lg:text-xl font-bold mb-0.5 sm:mb-1.5 lg:mb-2 leading-tight ${
                       !product.available
                         ? "text-[#121212] opacity-40"
                         : "text-[#121212]"
@@ -276,20 +276,20 @@ export default function MenuPage() {
                   </h3>
 
                   <p
-                    className="text-[10px] sm:text-[11px] lg:text-xs text-[#121212] opacity-60 leading-snug line-clamp-2 flex-1"
-                    style={{ lineHeight: "1.5" }}
+                    className="text-[8px] sm:text-[11px] lg:text-xs text-[#121212] opacity-60 leading-tight line-clamp-2 flex-1"
+                    style={{ lineHeight: "1.3" }}
                   >
                     {product.description}
                   </p>
 
                   {/* Price & Action */}
-                  <div className="flex items-end justify-between gap-2 sm:gap-3 lg:gap-4 mt-3 sm:mt-4 lg:mt-6">
+                  <div className="flex items-end justify-between gap-1.5 sm:gap-3 lg:gap-4 mt-2 sm:mt-4 lg:mt-6">
                     <div>
-                      <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-bold text-[#121212] opacity-40 tracking-[0.1em] uppercase mb-0.5 sm:mb-1 lg:mb-1.5">
+                      <div className="text-[7px] sm:text-[9px] lg:text-[10px] font-bold text-[#121212] opacity-40 tracking-[0.08em] uppercase mb-0.5 sm:mb-1 lg:mb-1.5">
                         Price
                       </div>
                       <div
-                        className={`text-xl sm:text-2xl lg:text-3xl font-black ${
+                        className={`text-base sm:text-2xl lg:text-3xl font-black ${
                           !product.available
                             ? "text-[#121212] opacity-30"
                             : "text-[#121212]"
@@ -303,7 +303,7 @@ export default function MenuPage() {
                     {product.available ? (
                       <button
                         onClick={() => handleAddToCart(product)}
-                        className="bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 font-black text-[9px] sm:text-[10px] lg:text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
+                        className="bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2.5 lg:py-3 font-black text-[8px] sm:text-[10px] lg:text-xs tracking-[0.12em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
                         style={{ borderRadius: "0px" }}
                       >
                         Add
@@ -311,7 +311,7 @@ export default function MenuPage() {
                     ) : (
                       <button
                         disabled
-                        className="bg-[#121212] bg-opacity-10 text-[#121212] text-opacity-30 px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 font-black text-[9px] sm:text-[10px] lg:text-xs tracking-[0.15em] uppercase cursor-not-allowed"
+                        className="bg-[#121212] bg-opacity-10 text-[#121212] text-opacity-30 px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2.5 lg:py-3 font-black text-[8px] sm:text-[10px] lg:text-xs tracking-[0.12em] uppercase cursor-not-allowed"
                         style={{ borderRadius: "0px" }}
                       >
                         N/A
