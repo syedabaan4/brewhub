@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useAuthStore, useCartStore } from '@/lib/store';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { useAuthStore, useCartStore } from "@/lib/store";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const { isAuthenticated, user, logout, loadUser } = useAuthStore();
@@ -20,50 +20,89 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push("/login");
   };
 
   return (
-    <nav className="bg-[#6F4E37] text-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <Link href="/" className="text-2xl font-bold">
-            ☕ Brewhub
+    <nav
+      className="bg-[#121212] text-[#F7F7F5] shadow-md"
+      style={{ boxShadow: "0px 2px 8px rgba(0,0,0,0.1)" }}
+    >
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="flex justify-between h-20 items-center">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <span
+              className="text-2xl font-bold tracking-tight"
+              style={{ letterSpacing: "-0.01em" }}
+            >
+              BrewHub
+            </span>
           </Link>
 
-          <div className="flex items-center space-x-6">
-            <Link href="/menu" className="hover:text-[#D4A574] transition-colors">
+          {/* Navigation Links */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link
+              href="/menu"
+              className="px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+              style={{ borderRadius: "0px" }}
+            >
               Menu
             </Link>
 
             {isAuthenticated ? (
               <>
-                <Link href="/cart" className="relative hover:text-[#D4A574] transition-colors">
+                {/* Cart */}
+                <Link
+                  href="/cart"
+                  className="relative px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                  style={{ borderRadius: "0px" }}
+                >
                   Cart
                   {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {cartCount}
+                    <span
+                      className="absolute -top-1 -right-1 bg-[#E9B60A] text-[#121212] text-xs font-black w-5 h-5 flex items-center justify-center"
+                      style={{ borderRadius: "0px" }}
+                    >
+                      {cartCount > 9 ? "9+" : cartCount}
                     </span>
                   )}
                 </Link>
-                <Link href="/profile" className="hover:text-[#D4A574] transition-colors">
+
+                {/* Profile */}
+                <Link
+                  href="/profile"
+                  className="px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                  style={{ borderRadius: "0px" }}
+                >
                   Profile
                 </Link>
+
+                {/* Logout */}
                 <button
                   onClick={handleLogout}
-                  className="hover:text-[#D4A574] transition-colors"
+                  className="px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                  style={{ borderRadius: "0px" }}
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="hover:text-[#D4A574] transition-colors">
+                {/* Login */}
+                <Link
+                  href="/login"
+                  className="px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                  style={{ borderRadius: "0px" }}
+                >
                   Login
                 </Link>
+
+                {/* Sign Up CTA */}
                 <Link
                   href="/register"
-                  className="bg-[#D4A574] hover:bg-[#C89B6A] px-4 py-2 rounded-lg transition-colors"
+                  className="bg-[#E9B60A] text-[#121212] px-4 sm:px-6 py-2 sm:py-3 font-black text-xs sm:text-sm tracking-[0.15em] uppercase transition-all hover:bg-opacity-90 hover:scale-105 cursor-pointer"
+                  style={{ borderRadius: "0px" }}
                 >
                   Sign Up
                 </Link>
@@ -75,4 +114,3 @@ export default function Navbar() {
     </nav>
   );
 }
-

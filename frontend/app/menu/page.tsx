@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
-import AddOnModal from '@/components/AddOnModal';
-import { useProductStore, useCartStore, useAuthStore } from '@/lib/store';
-import { Product, AddOn } from '@/types';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
+import AddOnModal from "@/components/AddOnModal";
+import { useProductStore, useCartStore, useAuthStore } from "@/lib/store";
+import { Product, AddOn } from "@/types";
+import toast from "react-hot-toast";
 
 export default function MenuPage() {
   const { products, loading, fetchProducts } = useProductStore();
   const { addToCart } = useCartStore();
   const { isAuthenticated } = useAuthStore();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
@@ -22,33 +22,33 @@ export default function MenuPage() {
     fetchProducts();
   }, [fetchProducts]);
 
-  const categories = ['all', ...Array.from(new Set(products.map((p) => p.category)))];
+  const categories = [
+    "all",
+    ...Array.from(new Set(products.map((p) => p.category))),
+  ];
 
   const filteredProducts = products.filter((product) => {
-    // Filter by category
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    
-    // Filter by search term (name or category)
-    const matchesSearch = searchTerm === '' || 
+    const matchesCategory =
+      selectedCategory === "all" || product.category === selectedCategory;
+    const matchesSearch =
+      searchTerm === "" ||
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesCategory && matchesSearch;
   });
 
   const handleAddToCart = async (product: Product) => {
     if (!isAuthenticated) {
-      toast.error('Please login to add items to cart');
-      router.push('/login');
+      toast.error("Please login to add items to cart");
+      router.push("/login");
       return;
     }
 
-    // If product has add-ons, show modal
     if (product.addons && product.addons.length > 0) {
       setSelectedProduct(product);
       setIsModalOpen(true);
     } else {
-      // No add-ons, add directly to cart
       try {
         await addToCart(product.id, 1);
       } catch (error) {
@@ -57,7 +57,10 @@ export default function MenuPage() {
     }
   };
 
-  const handleAddToCartWithAddons = async (selectedAddons: AddOn[], quantity: number) => {
+  const handleAddToCartWithAddons = async (
+    selectedAddons: AddOn[],
+    quantity: number,
+  ) => {
     if (!selectedProduct) return;
 
     try {
@@ -67,121 +70,251 @@ export default function MenuPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen">
-      <Navbar />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-4xl font-bold text-[#2C1810] mb-8">Our Menu</h1>
+  const accentColors = ["#E9B60A", "#4AA5A2", "#E97F8A", "#3973B8"];
+  const getAccentColor = (index: number) =>
+    accentColors[index % accentColors.length];
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search by name or category..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#6F4E37] focus:border-transparent"
-            />
-            <svg
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+  return (
+    <div className="min-h-screen bg-[#EDECE8]">
+      <Navbar />
+
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-10 lg:py-12">
+        {/* Compact Hero Section */}
+        <div className="mb-8 sm:mb-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 lg:gap-12">
+            {/* Left: Title */}
+            <div className="flex-shrink-0">
+              <div className="inline-block mb-3 sm:mb-4">
+                <div className="bg-[#E9B60A] px-4 sm:px-6 py-2">
+                  <span className="text-[#121212] font-bold text-xs tracking-[0.2em] uppercase">
+                    Menu
+                  </span>
+                </div>
+              </div>
+              <h1
+                className="text-[clamp(32px,8vw,64px)] font-bold text-[#121212] leading-[0.95] mb-3 sm:mb-4"
+                style={{ letterSpacing: "-0.02em" }}
+              >
+                Discover
+                <br />
+                your Brew
+              </h1>
+              <p
+                className="text-sm sm:text-base text-[#121212] opacity-70 max-w-md leading-relaxed"
+                style={{ lineHeight: "1.7" }}
+              >
+                handcrafted beverages made with passion, sourced from
+                <br />
+                the finest ingredients
+              </p>
+            </div>
+
+            {/* Right: Search & Filters */}
+            <div className="flex-1 lg:max-w-3xl">
+              <div
+                className="bg-[#F7F7F5] p-5 sm:p-6 lg:p-8"
+                style={{ boxShadow: "0px 4px 12px rgba(0,0,0,0.06)" }}
+              >
+                {/* Search Bar */}
+                <div className="mb-5 sm:mb-6">
+                  <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3">
+                    Search
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="find your favorite..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
+                      style={{ borderRadius: "0px" }}
+                    />
+                    <svg
+                      className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#121212] opacity-30"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Categories Horizontal */}
+                <div>
+                  <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3">
+                    Categories
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`px-4 sm:px-5 py-2 sm:py-3 font-bold transition-all border-2 text-xs sm:text-sm ${
+                          selectedCategory === category
+                            ? "bg-[#121212] text-[#F7F7F5] border-[#121212]"
+                            : "bg-white text-[#121212] border-transparent hover:border-[#121212] hover:border-opacity-20"
+                        }`}
+                        style={{ borderRadius: "0px", letterSpacing: "0.03em" }}
+                      >
+                        {category.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex gap-2 mb-8 overflow-x-auto">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                selectedCategory === category
-                  ? 'bg-[#6F4E37] text-white'
-                  : 'bg-white text-[#6F4E37] hover:bg-[#F5E6D3]'
-              }`}
-            >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </button>
-          ))}
-        </div>
+        {/* Results Count */}
+        {!loading && filteredProducts.length > 0 && (
+          <div className="mb-6 sm:mb-8 flex items-center gap-4 sm:gap-6">
+            <div className="h-[2px] w-12 sm:w-16 bg-[#121212] opacity-20"></div>
+            <p className="text-xs sm:text-sm font-bold text-[#121212] opacity-40 tracking-[0.15em] uppercase whitespace-nowrap">
+              {filteredProducts.length}{" "}
+              {filteredProducts.length === 1 ? "item" : "items"}
+            </p>
+            <div className="h-[2px] flex-1 bg-[#121212] opacity-20"></div>
+          </div>
+        )}
 
         {/* Products Grid */}
         {loading ? (
-          <div className="text-center py-16">
-            <p className="text-xl text-gray-600">Loading products...</p>
+          <div className="text-center py-20 sm:py-32">
+            <div
+              className="inline-block bg-[#F7F7F5] px-8 sm:px-12 py-6 sm:py-8"
+              style={{ boxShadow: "0px 4px 12px rgba(0,0,0,0.06)" }}
+            >
+              <p className="text-xl sm:text-2xl text-[#121212] opacity-60 font-bold tracking-wide">
+                LOADING...
+              </p>
+            </div>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-xl text-gray-600 mb-2">
-              {searchTerm ? 'No products found matching your search' : 'No products available'}
-            </p>
-            {searchTerm && (
-              <p className="text-gray-500">
-                Try a different search term or clear the search box
+          <div className="text-center py-20 sm:py-32">
+            <div
+              className="inline-block bg-[#F7F7F5] px-10 sm:px-16 py-8 sm:py-12"
+              style={{ boxShadow: "0px 4px 12px rgba(0,0,0,0.06)" }}
+            >
+              <p className="text-2xl sm:text-3xl text-[#121212] font-bold mb-3 sm:mb-4 tracking-tight">
+                {searchTerm ? "No matches found" : "No products available"}
               </p>
-            )}
+              {searchTerm && (
+                <p className="text-[#121212] opacity-50 text-base sm:text-lg">
+                  Try adjusting your search
+                </p>
+              )}
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <div 
-                key={product.id} 
-                className={`card overflow-hidden ${!product.available ? 'opacity-60' : ''}`}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
+            {filteredProducts.map((product, index) => (
+              <div
+                key={product.id}
+                className={`group overflow-hidden bg-[#F7F7F5] transition-all hover:translate-y-[-8px] ${
+                  !product.available ? "opacity-50" : ""
+                }`}
+                style={{
+                  borderRadius: "0px",
+                  boxShadow: "0px 4px 12px rgba(0,0,0,0.06)",
+                }}
               >
-                <div className="relative aspect-square bg-[#F5E6D3] flex items-center justify-center">
+                {/* Product Image - Changed from aspect-[4/5] to aspect-[4/4.5] for slightly shorter height */}
+                <div
+                  className="relative aspect-[4/4] flex items-center justify-center overflow-hidden"
+                  style={{ backgroundColor: getAccentColor(index) }}
+                >
                   {product.image_url ? (
                     <img
                       src={product.image_url}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <span className="text-6xl">☕</span>
-                  )}
-                  {!product.available && (
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                      <span className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow-lg">
-                        Out of Stock
-                      </span>
+                    <div className="text-[100px] sm:text-[120px] lg:text-[140px] opacity-15 select-none">
+                      ☕
                     </div>
                   )}
+
+                  {!product.available && (
+                    <div className="absolute inset-0 bg-[#121212] bg-opacity-40 flex items-center justify-center">
+                      <div className="bg-[#121212] px-6 sm:px-8 py-3 sm:py-4">
+                        <span className="text-[#F7F7F5] font-black text-xs sm:text-sm tracking-[0.2em]">
+                          SOLD OUT
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Category Badge */}
+                  <div className="absolute top-4 sm:top-6 left-4 sm:left-6">
+                    <div className="bg-[#F7F7F5] px-3 sm:px-4 py-1.5 sm:py-2">
+                      <span className="text-[#121212] font-bold text-[10px] sm:text-xs tracking-[0.15em] uppercase opacity-60">
+                        {product.category}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <h3 className={`text-lg font-semibold mb-1 ${!product.available ? 'text-gray-500' : 'text-[#2C1810]'}`}>
+
+                {/* Product Details */}
+                <div className="p-5 sm:p-6 lg:p-8 flex flex-col min-h-[280px]">
+                  <h3
+                    className={`text-xl sm:text-2xl font-bold mb-2 sm:mb-3 leading-tight ${
+                      !product.available
+                        ? "text-[#121212] opacity-40"
+                        : "text-[#121212]"
+                    }`}
+                    style={{ letterSpacing: "-0.01em" }}
+                  >
                     {product.name}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+
+                  <p
+                    className="text-xs sm:text-sm text-[#121212] opacity-60 leading-relaxed line-clamp-2 flex-1"
+                    style={{ lineHeight: "1.7" }}
+                  >
                     {product.description}
                   </p>
-                  <div className="flex justify-between items-center">
-                    <span className={`text-xl font-bold ${!product.available ? 'text-gray-400' : 'text-[#6F4E37]'}`}>
-                      ${product.price.toFixed(2)}
-                    </span>
+
+                  {/* Price & Action */}
+                  <div className="flex items-end justify-between gap-4 sm:gap-6 mt-6 sm:mt-8">
+                    <div>
+                      <div className="text-[10px] sm:text-xs font-bold text-[#121212] opacity-40 tracking-[0.1em] uppercase mb-1.5 sm:mb-2">
+                        Price
+                      </div>
+                      <div
+                        className={`text-3xl sm:text-4xl font-black ${
+                          !product.available
+                            ? "text-[#121212] opacity-30"
+                            : "text-[#121212]"
+                        }`}
+                        style={{ letterSpacing: "-0.02em" }}
+                      >
+                        ${product.price.toFixed(2)}
+                      </div>
+                    </div>
+
                     {product.available ? (
                       <button
                         onClick={() => handleAddToCart(product)}
-                        className="bg-[#6F4E37] hover:bg-[#5C3D2E] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
+                        style={{ borderRadius: "0px" }}
                       >
-                        Add to Cart
+                        Add
                       </button>
                     ) : (
                       <button
                         disabled
-                        className="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg text-sm font-medium cursor-not-allowed"
+                        className="bg-[#121212] bg-opacity-10 text-[#121212] text-opacity-30 px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase cursor-not-allowed"
+                        style={{ borderRadius: "0px" }}
                       >
-                        Unavailable
+                        N/A
                       </button>
                     )}
                   </div>
@@ -204,4 +337,3 @@ export default function MenuPage() {
     </div>
   );
 }
-
