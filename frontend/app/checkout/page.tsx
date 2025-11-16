@@ -133,16 +133,16 @@ export default function CheckoutPage() {
 
             {/* Order Number Badge */}
             <div
-              className="bg-[#E9B60A] p-6 sm:p-8 mb-8"
+              className="bg-[#E9B60A] p-4 sm:p-6 mb-8"
               style={{ borderRadius: "0px" }}
             >
               <div className="text-center">
-                <p className="text-xs font-bold text-[#121212] opacity-60 tracking-[0.15em] uppercase mb-2">
+                <p className="text-[10px] sm:text-xs font-bold text-[#121212] opacity-60 tracking-[0.15em] uppercase mb-2">
                   Order Number
                 </p>
                 <p
-                  className="text-3xl sm:text-4xl font-black text-[#121212]"
-                  style={{ letterSpacing: "-0.02em" }}
+                  className="text-xl sm:text-2xl lg:text-3xl font-black text-[#121212] break-all"
+                  style={{ letterSpacing: "-0.01em" }}
                 >
                   {orderNumber}
                 </p>
