@@ -258,7 +258,7 @@ export default function MenuPage() {
                 {/* Product Details */}
                 <div className="p-2 sm:p-4 lg:p-5 flex flex-col min-h-[110px] sm:min-h-[180px] lg:min-h-[220px]">
                   <h3
-                    className={`text-xs sm:text-lg lg:text-xl font-bold mb-0.5 sm:mb-1.5 lg:mb-2 leading-tight ${
+                    className={`text-s sm:text-lg lg:text-xl font-bold mb-0.5 sm:mb-1.5 lg:mb-2 leading-tight ${
                       !product.available
                         ? "text-[#121212] opacity-40"
                         : "text-[#121212]"
