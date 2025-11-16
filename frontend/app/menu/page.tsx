@@ -227,7 +227,7 @@ export default function MenuPage() {
               >
                 {/* Product Image - Very compact for mobile */}
                 <div
-                  className="relative aspect-[4/2.2] sm:aspect-[4/3.5] lg:aspect-[4/4] flex items-center justify-center overflow-hidden"
+                  className="relative aspect-[4/3.2] sm:aspect-[4/3.5] lg:aspect-[4/4] flex items-center justify-center overflow-hidden"
                   style={{ backgroundColor: getAccentColor(index) }}
                 >
                   {product.image_url ? (
@@ -254,8 +254,8 @@ export default function MenuPage() {
 
                   {/* Category Badge */}
                   <div className="absolute top-1.5 sm:top-3 lg:top-4 left-1.5 sm:left-3 lg:left-4">
-                    <div className="bg-[#F7F7F5] px-1.5 sm:px-2.5 lg:px-3 py-0.5 sm:py-1 lg:py-1.5">
-                      <span className="text-[#121212] font-bold text-[7px] sm:text-[9px] lg:text-[10px] tracking-[0.12em] uppercase opacity-60">
+                    <div className="bg-[#F7F7F5] px-1 py-0.5 sm:px-2.5 sm:py-1 lg:px-3 lg:py-1.5 inline-block">
+                      <span className="text-[#121212] font-bold text-[7px] sm:text-[9px] lg:text-[10px] tracking-[0.12em] uppercase opacity-60 whitespace-nowrap">
                         {product.category}
                       </span>
                     </div>

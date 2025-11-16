@@ -59,7 +59,7 @@ export default function AddOnModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 backdrop-blur-sm"
@@ -69,7 +69,7 @@ export default function AddOnModal({
 
       {/* Modal */}
       <div
-        className="relative bg-[#F7F7F5] w-full max-w-[95vw] sm:max-w-md lg:max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col z-10"
+        className="relative bg-[#F7F7F5] w-full max-w-[85vw] sm:max-w-md lg:max-w-lg max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col z-10"
         style={{
           borderRadius: "0px",
           boxShadow: "0px 8px 24px rgba(0,0,0,0.15)",
