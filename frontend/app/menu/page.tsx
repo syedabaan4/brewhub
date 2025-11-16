@@ -258,7 +258,7 @@ export default function MenuPage() {
                 {/* Product Details */}
                 <div className="p-2 sm:p-4 lg:p-5 flex flex-col min-h-[110px] sm:min-h-[180px] lg:min-h-[220px]">
                   <h3
-                    className={`text-s sm:text-lg lg:text-xl font-bold mb-0.5 sm:mb-1.5 lg:mb-2 leading-tight ${
+                    className={`text-base sm:text-3xl lg:text-3xl font-bold mb-0.5 sm:mb-1.5 lg:mb-2 leading-tight ${
                       !product.available
                         ? "text-[#121212] opacity-40"
                         : "text-[#121212]"
@@ -269,7 +269,7 @@ export default function MenuPage() {
                   </h3>
 
                   <p
-                    className="text-[8px] sm:text-[11px] lg:text-xs text-[#121212] opacity-60 leading-tight line-clamp-2 flex-1"
+                    className="text-[12px] sm:text-[16px] lg:text-base text-[#121212] opacity-70 leading-tight line-clamp-2 flex-1"
                     style={{ lineHeight: "1.3" }}
                   >
                     {product.description}
