@@ -14,7 +14,7 @@ A full-stack coffee ordering platform built with Next.js, Laravel, and MongoDB A
   - Drink customization with add-ons (extra shot, milk alternatives, syrups)
   - Shopping cart and checkout with add-on support
   - Order history and confirmation emails
-  >📧 Note on Email Delivery This project uses Mailtrap Sandbox for SMTP services. Since there is no verified sending domain, confirmation and welcome emails will not be delivered to real inboxes. Instead, they are intercepted and stored in the Mailtrap virtual inbox for safe testing.
+  >📧 Note on Email Delivery: This project uses Mailtrap Sandbox for SMTP services. Since there is no verified sending domain, confirmation and welcome emails will not be delivered to real inboxes. Instead, they are intercepted and stored in the Mailtrap virtual inbox for safe testing.
   - User profile management
   - Responsive design with coffee shop aesthetic
 
