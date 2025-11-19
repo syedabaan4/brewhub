@@ -1,27 +1,34 @@
 # ☕ Brewhub
 
-A full-stack coffee ordering platform with Next.js, Laravel, and MongoDB Atlas.
+A full-stack coffee ordering platform built with Next.js, Laravel, and MongoDB Atlas.
+
+**Live Demo:** [https://brewhub-rosy.vercel.app/](https://brewhub-rosy.vercel.app/)
+
+> **⚠️ Note on Backend Performance:**
+> The backend is hosted on **Render's free tier**, which spins down after 15 minutes of inactivity. If the application seems unresponsive initially, please allow **30-50 seconds** for the server to wake up. Subsequent requests will be instant.
 
 ## Features
 
-- JWT authentication with email validation and password strength enforcement
-- Product menu with category filtering and availability status
-- Drink customization with add-ons (extra shot, milk alternatives, syrups)
-- Shopping cart and checkout with add-on support
-- Order history and confirmation emails
-- User profile management
-- Responsive design with coffee shop aesthetic
+  - JWT authentication with email validation and password strength enforcement
+  - Product menu with category filtering and availability status
+  - Drink customization with add-ons (extra shot, milk alternatives, syrups)
+  - Shopping cart and checkout with add-on support
+  - Order history and confirmation emails
+  >📧 Note on Email Delivery This project uses Mailtrap Sandbox for SMTP services. Since there is no verified sending domain, confirmation and welcome emails will not be delivered to real inboxes. Instead, they are intercepted and stored in the Mailtrap virtual inbox for safe testing.
+  - User profile management
+  - Responsive design with coffee shop aesthetic
 
 ## Tech Stack
 
-**Frontend:** Next.js 14+ (TypeScript), Tailwind CSS, Zustand  
+**Frontend:** Next.js 14+ (TypeScript), Tailwind CSS, Zustand
 **Backend:** Laravel 10+ (PHP 8.1+), MongoDB Atlas, Sanctum
 
 ## Prerequisites
 
-- Node.js 18+, npm 10+
-- PHP 8.1+, Composer
-- MongoDB Atlas account
+  - Node.js 18+, npm 10+
+  - PHP 8.1+, Composer
+  - **MongoDB PHP Extension** (Required for Laravel to communicate with Atlas)
+  - MongoDB Atlas account
 
 ## Quick Start
 
@@ -29,8 +36,11 @@ A full-stack coffee ordering platform with Next.js, Laravel, and MongoDB Atlas.
 
 ```bash
 cd backend
+cp .env.example .env
+# Configure .env with your MongoDB connection string (DB_DSN)
+
 composer install
-# Configure .env with MongoDB connection string
+php artisan key:generate
 php artisan serve  # Runs on http://localhost:8000
 ```
 
@@ -45,8 +55,21 @@ npm run dev  # Runs on http://localhost:3000
 
 ## API Endpoints
 
-**Public:** `/api/register`, `/api/login`, `/api/products`  
-**Protected:** `/api/user`, `/api/cart`, `/api/orders`, `/api/profile`
+**Public Routes**
+
+  - `GET /api/health` - Server status check
+  - `POST /api/register` - User registration
+  - `POST /api/login` - User login
+  - `GET /api/products` - List all products
+  - `GET /api/products/{id}` - Product details
+  - `GET /api/categories` - List product categories
+
+**Protected Routes (Requires Bearer Token)**
+
+  - **Auth:** `POST /api/logout`, `GET /api/user`
+  - **Profile:** `GET /api/profile`, `PUT /api/profile`
+  - **Cart:** `GET /api/cart`, `POST /api/cart/add`, `PUT /api/cart/update/{id}`, `DELETE /api/cart/remove/{id}`
+  - **Orders:** `GET /api/orders`, `POST /api/orders`, `GET /api/orders/{id}`
 
 See individual README files in `frontend/` and `backend/` for more details.
 
@@ -54,29 +77,29 @@ See individual README files in `frontend/` and `backend/` for more details.
 
 ```
 Brewhub/
-├── frontend/                    # Next.js Frontend
-│   ├── app/                     # App Router (Next.js 14+)
-│   │   ├── login/              # Login page
-│   │   ├── register/           # Registration page
-│   │   ├── menu/               # Product menu page
-│   │   ├── cart/               # Shopping cart page
-│   │   ├── checkout/           # Checkout page
-│   │   ├── profile/            # User profile page
-│   │   ├── layout.tsx          # Root layout with Navbar
-│   │   ├── page.tsx            # Home/landing page
-│   │   └── globals.css         # Global styles
-│   ├── components/             # Reusable React components
-│   │   ├── Navbar.tsx          # Navigation bar
-│   │   ├── AddOnModal.tsx      # Add-ons selection modal for drink customization
-│   │   └── ConfirmModal.tsx    # Confirmation dialog for actions
-│   ├── lib/                    # Utilities & client-side logic
-│   │   ├── api.ts              # Axios API client
-│   │   └── store.ts            # Zustand state stores
-│   ├── types/                  # TypeScript type definitions
-│   │   └── index.ts            # Shared types (User, Product, Cart, etc.)
-│   └── package.json            # Dependencies (Next.js, React, Zustand, Axios)
+├── frontend/                     # Next.js Frontend
+│   ├── app/                      # App Router (Next.js 14+)
+│   │   ├── login/               # Login page
+│   │   ├── register/            # Registration page
+│   │   ├── menu/                # Product menu page
+│   │   ├── cart/                # Shopping cart page
+│   │   ├── checkout/            # Checkout page
+│   │   ├── profile/             # User profile page
+│   │   ├── layout.tsx           # Root layout with Navbar
+│   │   ├── page.tsx             # Home/landing page
+│   │   └── globals.css          # Global styles
+│   ├── components/              # Reusable React components
+│   │   ├── Navbar.tsx           # Navigation bar
+│   │   ├── AddOnModal.tsx       # Add-ons selection modal for drink customization
+│   │   └── ConfirmModal.tsx     # Confirmation dialog for actions
+│   ├── lib/                     # Utilities & client-side logic
+│   │   ├── api.ts               # Axios API client
+│   │   └── store.ts             # Zustand state stores
+│   ├── types/                   # TypeScript type definitions
+│   │   └── index.ts             # Shared types (User, Product, Cart, etc.)
+│   └── package.json             # Dependencies (Next.js, React, Zustand, Axios)
 │
-└── backend/                     # Laravel Backend API
+└── backend/                      # Laravel Backend API
     ├── app/
     │   ├── Http/Controllers/    # API Controllers
     │   │   ├── AuthController.php       # Login, register, logout
@@ -92,8 +115,8 @@ Brewhub/
     │   ├── Rules/               # Custom validation rules
     │   │   └── StrongPassword.php
     │   └── Notifications/       # Email notifications
-    │       ├── WelcomeEmail.php        # Welcome email on registration
-    │       └── OrderConfirmation.php   # Order confirmation email with details
+    │       ├── WelcomeEmail.php         # Welcome email on registration
+    │       └── OrderConfirmation.php    # Order confirmation email with details
     ├── routes/
     │   └── api.php              # API routes definition
     ├── database/
