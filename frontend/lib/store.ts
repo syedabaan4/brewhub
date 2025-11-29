@@ -8,7 +8,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   register: (data: any) => Promise<void>;
   logout: () => void;
   loadUser: () => void;
