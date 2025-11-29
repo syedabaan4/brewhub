@@ -23,6 +23,8 @@ export interface Product {
   image_url: string;
   available: boolean;
   addons?: AddOn[];
+  average_rating: number | null;
+  review_count: number;
 }
 
 export interface CartItem {
@@ -40,7 +42,13 @@ export interface Cart {
   total: number;
 }
 
-export type OrderStatus = 'received' | 'preparing' | 'ready_for_pickup' | 'completed' | 'cancelled' | 'pending';
+export type OrderStatus =
+  | "received"
+  | "preparing"
+  | "ready_for_pickup"
+  | "completed"
+  | "cancelled"
+  | "pending";
 
 export interface Order {
   id: string;
@@ -50,13 +58,52 @@ export interface Order {
   items: CartItem[];
   total_price: number;
   status: OrderStatus;
-  payment_status: 'pending' | 'paid' | 'failed';
+  payment_status: "pending" | "paid" | "failed";
   customer_name: string;
   customer_email: string;
   customer_phone: string;
   estimated_completion_time?: string | null;
   created_at: string;
   updated_at?: string;
+}
+
+export interface Review {
+  id: string;
+  _id?: string;
+  user_id: string;
+  product_id: string;
+  order_id: string;
+  order_item_index: number;
+  rating: number;
+  comment: string | null;
+  user_name: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ReviewsResponse {
+  product_id: string;
+  average_rating: number | null;
+  total_reviews: number;
+  reviews: Review[];
+  pagination: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+}
+
+export interface OrderReviewStatus {
+  order_id: string;
+  can_review: boolean;
+  items: {
+    order_item_index: number;
+    product_id: string;
+    product_name: string;
+    reviewed: boolean;
+    review: Review | null;
+  }[];
 }
 
 export interface AuthResponse {
@@ -77,4 +124,3 @@ export interface RegisterData {
   phone?: string;
   address?: string;
 }
-

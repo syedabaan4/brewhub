@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,13 @@ Route::post("/login", [AuthController::class, "login"]);
 Route::get("/products", [ProductController::class, "index"]);
 Route::get("/products/{id}", [ProductController::class, "show"]);
 Route::get("/categories", [ProductController::class, "categories"]);
+
+// Review routes (public - viewing reviews)
+Route::get("/products/{id}/reviews", [
+    ReviewController::class,
+    "productReviews",
+]);
+
 Route::get("/health", function () {
     return response()->json(
         [
@@ -63,6 +71,13 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::get("/orders", [OrderController::class, "index"]);
     Route::post("/orders", [OrderController::class, "store"]);
     Route::get("/orders/{id}", [OrderController::class, "show"]);
+
+    // Review routes (protected - submitting reviews)
+    Route::post("/reviews", [ReviewController::class, "store"]);
+    Route::get("/orders/{id}/review-status", [
+        ReviewController::class,
+        "orderReviewStatus",
+    ]);
 
     // Admin routes
     Route::middleware("admin")->group(function () {

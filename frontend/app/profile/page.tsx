@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import ReviewFormModal from "@/components/ReviewFormModal";
 import { useAuthStore } from "@/lib/store";
 import api from "@/lib/api";
-import { Order } from "@/types";
+import { Order, OrderReviewStatus } from "@/types";
 import toast from "react-hot-toast";
 
 export default function ProfilePage() {
-  const { isAuthenticated, user, updateProfile, loading, loadUser } = useAuthStore();
+  const { isAuthenticated, user, updateProfile, loading, loadUser } =
+    useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -21,6 +23,20 @@ export default function ProfilePage() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [activeTab, setActiveTab] = useState<"profile" | "orders">("profile");
   const router = useRouter();
+
+  // Review modal state
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<{
+    orderId: string;
+    orderItemIndex: number;
+    productId: string;
+    productName: string;
+  } | null>(null);
+
+  // Track which items have been reviewed per order
+  const [orderReviewStatuses, setOrderReviewStatuses] = useState<{
+    [orderId: string]: OrderReviewStatus;
+  }>({});
 
   // Load user on mount
   useEffect(() => {
@@ -58,10 +74,30 @@ export default function ProfilePage() {
       setLoadingOrders(true);
       const response = await api.get("/orders");
       setOrders(response.data);
+
+      // Fetch review status for completed orders
+      const completedOrders = response.data.filter(
+        (order: Order) => order.status === "completed",
+      );
+      for (const order of completedOrders) {
+        fetchOrderReviewStatus(order._id || order.id);
+      }
     } catch (error: any) {
       toast.error("Failed to load order history");
     } finally {
       setLoadingOrders(false);
+    }
+  };
+
+  const fetchOrderReviewStatus = async (orderId: string) => {
+    try {
+      const response = await api.get(`/orders/${orderId}/review-status`);
+      setOrderReviewStatuses((prev) => ({
+        ...prev,
+        [orderId]: response.data,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch review status:", error);
     }
   };
 
@@ -94,6 +130,32 @@ export default function ProfilePage() {
       });
     }
     setIsEditing(false);
+  };
+
+  const handleOpenReviewModal = (
+    orderId: string,
+    orderItemIndex: number,
+    productId: string,
+    productName: string,
+  ) => {
+    setReviewTarget({ orderId, orderItemIndex, productId, productName });
+    setIsReviewModalOpen(true);
+  };
+
+  const handleReviewSuccess = () => {
+    // Refresh review status for the order
+    if (reviewTarget) {
+      fetchOrderReviewStatus(reviewTarget.orderId);
+    }
+  };
+
+  const isItemReviewed = (orderId: string, itemIndex: number): boolean => {
+    const status = orderReviewStatuses[orderId];
+    if (!status) return false;
+    const itemStatus = status.items.find(
+      (item) => item.order_item_index === itemIndex,
+    );
+    return itemStatus?.reviewed ?? false;
   };
 
   if (!isAuthenticated || !user) {
@@ -149,210 +211,179 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[#EDECE8]">
       <Navbar />
 
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-10 lg:py-12">
-        {/* Page Header */}
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-10 lg:py-12">
+        {/* Page Title */}
         <div className="mb-8 sm:mb-10">
+          <div className="inline-block mb-3 sm:mb-4">
+            <div className="bg-[#E9B60A] px-4 sm:px-6 py-2">
+              <span className="text-[#121212] font-bold text-xs tracking-[0.2em] uppercase">
+                Account
+              </span>
+            </div>
+          </div>
           <h1
-            className="text-2xl sm:text-3xl font-bold text-[#121212] mb-2"
-            style={{ letterSpacing: "-0.01em" }}
+            className="text-[clamp(32px,8vw,64px)] font-bold text-[#121212] leading-[0.95]"
+            style={{ letterSpacing: "-0.02em" }}
           >
-            My Account
+            My Profile
           </h1>
-          <p className="text-sm sm:text-base text-[#121212] opacity-60">
-            Manage your profile and view order history
-          </p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 sm:gap-3 mb-8">
+        <div className="flex gap-2 mb-8">
           <button
             onClick={() => setActiveTab("profile")}
-            className={`px-5 sm:px-6 py-3 sm:py-4 font-bold text-xs sm:text-sm tracking-[0.03em] uppercase transition-all ${
+            className={`px-6 py-3 font-bold text-sm transition-all ${
               activeTab === "profile"
                 ? "bg-[#121212] text-[#F7F7F5]"
                 : "bg-[#F7F7F5] text-[#121212] hover:bg-[#121212] hover:text-[#F7F7F5]"
             }`}
             style={{ borderRadius: "0px" }}
           >
-            Profile
+            PROFILE
           </button>
           <button
             onClick={() => setActiveTab("orders")}
-            className={`px-5 sm:px-6 py-3 sm:py-4 font-bold text-xs sm:text-sm tracking-[0.03em] uppercase transition-all ${
+            className={`px-6 py-3 font-bold text-sm transition-all ${
               activeTab === "orders"
                 ? "bg-[#121212] text-[#F7F7F5]"
                 : "bg-[#F7F7F5] text-[#121212] hover:bg-[#121212] hover:text-[#F7F7F5]"
             }`}
             style={{ borderRadius: "0px" }}
           >
-            Order History
+            ORDER HISTORY
           </button>
         </div>
 
         {/* Profile Tab */}
         {activeTab === "profile" && (
           <div
-            className="bg-[#F7F7F5] p-6 sm:p-8 lg:p-10"
+            className="bg-[#F7F7F5] p-6 sm:p-8 lg:p-10 max-w-2xl"
             style={{
               borderRadius: "0px",
               boxShadow: "0px 4px 12px rgba(0,0,0,0.06)",
             }}
           >
-            {!isEditing ? (
-              <>
-                {/* View Mode */}
-                <div className="space-y-6 mb-8">
-                  <div>
-                    <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-2">
-                      Full Name
-                    </label>
-                    <p className="text-base sm:text-lg text-[#121212] font-medium">
-                      {user.name}
-                    </p>
-                  </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Name Field */}
+              <div>
+                <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3">
+                  Name
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 transition-all bg-white text-[#121212]"
+                    style={{ borderRadius: "0px" }}
+                    required
+                  />
+                ) : (
+                  <p className="text-lg text-[#121212] font-semibold">
+                    {user.name}
+                  </p>
+                )}
+              </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-2">
-                      Email Address
-                    </label>
-                    <p className="text-base sm:text-lg text-[#121212] font-medium">
-                      {user.email}
-                    </p>
-                  </div>
+              {/* Email Field */}
+              <div>
+                <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3">
+                  Email
+                </label>
+                {isEditing ? (
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 transition-all bg-white text-[#121212]"
+                    style={{ borderRadius: "0px" }}
+                    required
+                  />
+                ) : (
+                  <p className="text-lg text-[#121212] font-semibold">
+                    {user.email}
+                  </p>
+                )}
+              </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-2">
-                      Phone Number
-                    </label>
-                    <p className="text-base sm:text-lg text-[#121212] font-medium">
-                      {user.phone || (
-                        <span className="opacity-40">Not provided</span>
-                      )}
-                    </p>
-                  </div>
+              {/* Phone Field */}
+              <div>
+                <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3">
+                  Phone
+                </label>
+                {isEditing ? (
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 transition-all bg-white text-[#121212]"
+                    style={{ borderRadius: "0px" }}
+                  />
+                ) : (
+                  <p className="text-lg text-[#121212] font-semibold">
+                    {user.phone || "Not provided"}
+                  </p>
+                )}
+              </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-2">
-                      Address
-                    </label>
-                    <p className="text-base sm:text-lg text-[#121212] font-medium">
-                      {user.address || (
-                        <span className="opacity-40">Not provided</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
+              {/* Address Field */}
+              <div>
+                <label className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3">
+                  Address
+                </label>
+                {isEditing ? (
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-3 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 transition-all bg-white text-[#121212] resize-none"
+                    style={{ borderRadius: "0px" }}
+                  />
+                ) : (
+                  <p className="text-lg text-[#121212] font-semibold">
+                    {user.address || "Not provided"}
+                  </p>
+                )}
+              </div>
 
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
-                  style={{ borderRadius: "0px" }}
-                >
-                  Edit Profile
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Edit Mode */}
-                <form
-                  onSubmit={handleSubmit}
-                  className="space-y-5 sm:space-y-6"
-                >
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3"
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                {isEditing ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="flex-1 px-6 py-4 border-2 border-[#121212] text-[#121212] font-black text-xs tracking-[0.15em] uppercase transition-all hover:bg-[#121212] hover:text-[#F7F7F5] cursor-pointer"
                       style={{ borderRadius: "0px" }}
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3"
                     >
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
-                      style={{ borderRadius: "0px" }}
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3"
-                    >
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
-                      style={{ borderRadius: "0px" }}
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="address"
-                      className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3"
-                    >
-                      Address
-                    </label>
-                    <textarea
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30 resize-none"
-                      style={{ borderRadius: "0px" }}
-                    />
-                  </div>
-
-                  <div className="flex gap-3 pt-2">
+                      Cancel
+                    </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      className="flex-1 px-6 py-4 bg-[#121212] text-[#F7F7F5] font-black text-xs tracking-[0.15em] uppercase transition-all hover:bg-opacity-90 hover:scale-105 cursor-pointer disabled:opacity-50"
                       style={{ borderRadius: "0px" }}
                     >
                       {loading ? "SAVING..." : "SAVE CHANGES"}
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleCancel}
-                      className="flex-1 bg-transparent border-2 border-[#121212] text-[#121212] hover:bg-[#121212] hover:text-[#F7F7F5] px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase transition-all cursor-pointer"
-                      style={{ borderRadius: "0px" }}
-                    >
-                      CANCEL
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className="px-6 py-4 bg-[#121212] text-[#F7F7F5] font-black text-xs tracking-[0.15em] uppercase transition-all hover:bg-opacity-90 hover:scale-105 cursor-pointer"
+                    style={{ borderRadius: "0px" }}
+                  >
+                    EDIT PROFILE
+                  </button>
+                )}
+              </div>
+            </form>
           </div>
         )}
 
@@ -443,59 +474,102 @@ export default function ProfilePage() {
                         Order Items
                       </h4>
                       <div className="space-y-4">
-                        {order.items.map((item: any, index) => (
-                          <div
-                            key={index}
-                            className="flex justify-between items-start gap-4"
-                          >
-                            <div className="flex-1">
-                              <p className="text-sm sm:text-base text-[#121212] font-semibold mb-1">
-                                {item.quantity}×{" "}
-                                {item.product_name ||
-                                  item.product?.name ||
-                                  "Item"}
-                              </p>
-                              {item.selected_addons &&
-                                item.selected_addons.length > 0 && (
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {item.selected_addons.map(
-                                      (addon: any, idx: number) => (
-                                        <div
-                                          key={idx}
-                                          className="bg-[#E9B60A] px-3 py-1"
-                                          style={{ borderRadius: "0px" }}
+                        {order.items.map((item: any, index) => {
+                          const orderId = (order as any)._id || order.id;
+                          const reviewed = isItemReviewed(orderId, index);
+                          const productId = item.product_id;
+                          const productName =
+                            item.product_name || item.product?.name || "Item";
+
+                          return (
+                            <div
+                              key={index}
+                              className="flex justify-between items-start gap-4"
+                            >
+                              <div className="flex-1">
+                                <p className="text-sm sm:text-base text-[#121212] font-semibold mb-1">
+                                  {item.quantity}× {productName}
+                                </p>
+                                {item.selected_addons &&
+                                  item.selected_addons.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {item.selected_addons.map(
+                                        (addon: any, idx: number) => (
+                                          <div
+                                            key={idx}
+                                            className="bg-[#E9B60A] px-3 py-1"
+                                            style={{ borderRadius: "0px" }}
+                                          >
+                                            <span className="text-[10px] font-bold text-[#121212] tracking-[0.1em] uppercase">
+                                              {addon.name} (+$
+                                              {addon.price.toFixed(2)})
+                                            </span>
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
+                                  )}
+
+                                {/* Review Button for Completed Orders */}
+                                {order.status === "completed" && (
+                                  <div className="mt-2">
+                                    {reviewed ? (
+                                      <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-[#4AA5A2] tracking-[0.1em] uppercase">
+                                        <span>✓</span> Reviewed
+                                      </span>
+                                    ) : (
+                                      <button
+                                        onClick={() =>
+                                          handleOpenReviewModal(
+                                            orderId,
+                                            index,
+                                            productId,
+                                            productName,
+                                          )
+                                        }
+                                        className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-[#3973B8] hover:text-[#121212] tracking-[0.1em] uppercase transition-colors cursor-pointer"
+                                      >
+                                        <svg
+                                          className="w-3 h-3"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                          strokeWidth={2}
                                         >
-                                          <span className="text-[10px] font-bold text-[#121212] tracking-[0.1em] uppercase">
-                                            {addon.name} (+$
-                                            {addon.price.toFixed(2)})
-                                          </span>
-                                        </div>
-                                      ),
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                                          />
+                                        </svg>
+                                        Write Review
+                                      </button>
                                     )}
                                   </div>
                                 )}
+                              </div>
+                              <p className="text-sm sm:text-base text-[#121212] font-bold">
+                                $
+                                {(() => {
+                                  let total = item.price * item.quantity;
+                                  if (
+                                    item.selected_addons &&
+                                    item.selected_addons.length > 0
+                                  ) {
+                                    const addonsTotal =
+                                      item.selected_addons.reduce(
+                                        (sum: number, addon: any) =>
+                                          sum + addon.price,
+                                        0,
+                                      );
+                                    total += addonsTotal * item.quantity;
+                                  }
+                                  return total.toFixed(2);
+                                })()}
+                              </p>
                             </div>
-                            <p className="text-sm sm:text-base text-[#121212] font-bold">
-                              $
-                              {(() => {
-                                let total = item.price * item.quantity;
-                                if (
-                                  item.selected_addons &&
-                                  item.selected_addons.length > 0
-                                ) {
-                                  const addonsTotal =
-                                    item.selected_addons.reduce(
-                                      (sum: number, addon: any) =>
-                                        sum + addon.price,
-                                      0,
-                                    );
-                                  total += addonsTotal * item.quantity;
-                                }
-                                return total.toFixed(2);
-                              })()}
-                            </p>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -533,13 +607,15 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Status Messages */}
-                    {(order.status === "pending" || order.status === "received") && (
+                    {(order.status === "pending" ||
+                      order.status === "received") && (
                       <div
                         className="bg-[#3973B8] bg-opacity-20 border-2 border-[#3973B8] border-opacity-30 p-4"
                         style={{ borderRadius: "0px" }}
                       >
                         <p className="text-sm text-[#121212] font-medium">
-                          📋 Your order has been received and will be prepared shortly.
+                          📋 Your order has been received and will be prepared
+                          shortly.
                         </p>
                       </div>
                     )}
@@ -559,7 +635,8 @@ export default function ProfilePage() {
                         style={{ borderRadius: "0px" }}
                       >
                         <p className="text-sm text-[#121212] font-medium">
-                          🔔 Your order is ready! Please come to the counter to pick it up.
+                          🔔 Your order is ready! Please come to the counter to
+                          pick it up.
                         </p>
                       </div>
                     )}
@@ -587,7 +664,11 @@ export default function ProfilePage() {
                     {/* Track Order Button - shown for active orders */}
                     {!["completed", "cancelled"].includes(order.status) && (
                       <button
-                        onClick={() => router.push(`/orders/${(order as any)._id || order.id}`)}
+                        onClick={() =>
+                          router.push(
+                            `/orders/${(order as any)._id || order.id}`,
+                          )
+                        }
                         className="w-full mt-4 bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-6 py-3 font-black text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
                         style={{ borderRadius: "0px" }}
                       >
@@ -601,6 +682,19 @@ export default function ProfilePage() {
           </div>
         )}
       </main>
+
+      {/* Review Form Modal */}
+      {reviewTarget && (
+        <ReviewFormModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          onSuccess={handleReviewSuccess}
+          orderId={reviewTarget.orderId}
+          orderItemIndex={reviewTarget.orderItemIndex}
+          productId={reviewTarget.productId}
+          productName={reviewTarget.productName}
+        />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import AddOnModal from "@/components/AddOnModal";
+import ReviewsModal from "@/components/ReviewsModal";
 import { useProductStore, useCartStore, useAuthStore } from "@/lib/store";
 import { Product, AddOn } from "@/types";
 import toast from "react-hot-toast";
@@ -16,6 +17,8 @@ export default function MenuPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reviewProduct, setReviewProduct] = useState<Product | null>(null);
+  const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const router = useRouter();
 
   // Load user and check if admin
@@ -80,6 +83,32 @@ export default function MenuPage() {
     } catch (error) {
       // Error handled in store
     }
+  };
+
+  const handleViewReviews = (product: Product) => {
+    setReviewProduct(product);
+    setIsReviewsModalOpen(true);
+  };
+
+  const renderStars = (rating: number | null) => {
+    if (rating === null) return null;
+    const roundedRating = Math.round(rating);
+    return (
+      <div className="flex gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={`text-[11px] sm:text-[13px] ${
+              star <= roundedRating
+                ? "text-[#E9B60A]"
+                : "text-[#121212] opacity-20"
+            }`}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    );
   };
 
   const accentColors = ["#E9B60A", "#4AA5A2", "#E97F8A", "#3973B8"];
@@ -263,12 +292,10 @@ export default function MenuPage() {
                       </div>
                     </div>
                   )}
-
-                  
                 </div>
 
                 {/* Product Details */}
-                <div className="p-2 sm:p-4 lg:p-5 flex flex-col min-h-[110px] sm:min-h-[180px] lg:min-h-[220px]">
+                <div className="p-2 sm:p-4 lg:p-5 flex flex-col min-h-[130px] sm:min-h-[200px] lg:min-h-[240px]">
                   <h3
                     className={`text-base sm:text-3xl lg:text-3xl font-bold mb-0.5 sm:mb-1.5 lg:mb-2 leading-tight ${
                       !product.available
@@ -279,6 +306,29 @@ export default function MenuPage() {
                   >
                     {product.name}
                   </h3>
+
+                  {/* Rating Display */}
+                  <button
+                    onClick={() => handleViewReviews(product)}
+                    className="flex items-center gap-1.5 mb-1 sm:mb-2 hover:opacity-70 transition-opacity cursor-pointer self-start"
+                  >
+                    {product.average_rating !== null &&
+                    product.review_count > 0 ? (
+                      <>
+                        {renderStars(product.average_rating)}
+                        <span className="text-[10px] sm:text-[13px] font-bold text-[#121212] opacity-50">
+                          {product.average_rating.toFixed(1)}
+                        </span>
+                        <span className="text-[9px] sm:text-[11px] text-[#121212] opacity-40">
+                          ({product.review_count})
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-[9px] sm:text-[11px] text-[#121212] opacity-40 italic">
+                        No reviews yet
+                      </span>
+                    )}
+                  </button>
 
                   <p
                     className="text-[12px] sm:text-[16px] lg:text-base text-[#121212] opacity-70 leading-tight line-clamp-2 flex-1"
@@ -337,6 +387,15 @@ export default function MenuPage() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onAddToCart={handleAddToCartWithAddons}
+        />
+      )}
+
+      {/* Reviews Modal */}
+      {reviewProduct && (
+        <ReviewsModal
+          product={reviewProduct}
+          isOpen={isReviewsModalOpen}
+          onClose={() => setIsReviewsModalOpen(false)}
         />
       )}
     </div>
