@@ -14,8 +14,8 @@ export default function RegisterPage() {
     password: "",
     password_confirmation: "",
     phone: "",
-    address: "",
   });
+  const [phoneError, setPhoneError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState({
     minLength: false,
     hasUpperCase: false,
@@ -50,6 +50,21 @@ export default function RegisterPage() {
     return Object.values(passwordStrength).every(Boolean);
   };
 
+  const validateEmail = (email: string): boolean => {
+    // Email regex: requires proper local part, domain, and TLD with min 2 chars
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string): boolean => {
+    // Matches Pakistan formats: +923001234567, 03001234567, 0300-1234567, +92 300 1234567
+    // Also supports general international formats
+    const phoneRegex =
+      /^(\+92|0)?[\s\-]?3[0-9]{2}[\s\-]?[0-9]{7}$|^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ""));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -60,6 +75,23 @@ export default function RegisterPage() {
 
     if (!isPasswordStrong()) {
       toast.error("Please meet all password requirements");
+      return;
+    }
+
+    if (!validateEmail(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (!formData.phone.trim()) {
+      setPhoneError("Phone number is required");
+      toast.error("Phone number is required");
+      return;
+    }
+
+    if (!validatePhone(formData.phone)) {
+      setPhoneError("Please enter a valid phone number");
+      toast.error("Please enter a valid phone number");
       return;
     }
 
@@ -77,10 +109,22 @@ export default function RegisterPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Clear phone error when user starts typing
+    if (name === "phone") {
+      if (value.trim() && validatePhone(value)) {
+        setPhoneError("");
+      } else if (value.trim() && !validatePhone(value)) {
+        setPhoneError("Please enter a valid phone number");
+      } else {
+        setPhoneError("Phone number is required");
+      }
+    }
   };
 
   return (
@@ -124,7 +168,7 @@ export default function RegisterPage() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
+                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-gray-400"
                 placeholder="John Doe"
                 style={{ borderRadius: "0px" }}
               />
@@ -145,7 +189,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
+                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-gray-400"
                 placeholder="your@email.com"
                 style={{ borderRadius: "0px" }}
               />
@@ -157,7 +201,7 @@ export default function RegisterPage() {
                 htmlFor="phone"
                 className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3"
               >
-                Phone Number <span className="opacity-50">(Optional)</span>
+                Phone Number <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
@@ -165,30 +209,18 @@ export default function RegisterPage() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
-                placeholder="+1234567890"
+                required
+                className={`w-full px-4 sm:px-5 py-3 sm:py-4 border-2 ${
+                  phoneError
+                    ? "border-red-500 border-opacity-100"
+                    : "border-[#121212] border-opacity-10"
+                } focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-gray-400`}
+                placeholder="03001234567"
                 style={{ borderRadius: "0px" }}
               />
-            </div>
-
-            {/* Address Field */}
-            <div>
-              <label
-                htmlFor="address"
-                className="block text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-3"
-              >
-                Address <span className="opacity-50">(Optional)</span>
-              </label>
-              <textarea
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30 resize-none"
-                placeholder="123 Main St, City, Country"
-                style={{ borderRadius: "0px" }}
-              />
+              {phoneError && (
+                <p className="mt-2 text-xs text-red-500">{phoneError}</p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -208,7 +240,7 @@ export default function RegisterPage() {
                 onFocus={() => setShowPasswordRequirements(true)}
                 required
                 minLength={8}
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
+                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-gray-400"
                 placeholder="••••••••"
                 style={{ borderRadius: "0px" }}
               />
@@ -349,7 +381,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 minLength={8}
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-[#121212] placeholder-opacity-30"
+                className="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-[#121212] border-opacity-10 focus:border-[#121212] focus:border-opacity-30 focus:outline-none transition-all bg-white text-[#121212] text-sm sm:text-base placeholder-gray-400"
                 placeholder="••••••••"
                 style={{ borderRadius: "0px" }}
               />

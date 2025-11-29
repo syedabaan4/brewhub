@@ -61,8 +61,9 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Email validation - requires proper domain and TLD (min 2 chars)
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(customerEmail)) {
       toast.error("Please enter a valid email address");
       return;
@@ -301,7 +302,11 @@ export default function CheckoutPage() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <button
-                onClick={() => router.push(`/orders/${completedOrder._id || completedOrder.id}`)}
+                onClick={() =>
+                  router.push(
+                    `/orders/${completedOrder._id || completedOrder.id}`,
+                  )
+                }
                 className="flex-1 bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
                 style={{ borderRadius: "0px" }}
               >
