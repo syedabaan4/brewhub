@@ -110,8 +110,6 @@ export default function ProfilePage() {
         return "bg-[#E9B60A]";
       case "received":
         return "bg-[#3973B8]";
-      case "processing":
-        return "bg-[#3973B8]";
       case "cancelled":
         return "bg-[#E97F8A]";
       default:
@@ -545,7 +543,7 @@ export default function ProfilePage() {
                         </p>
                       </div>
                     )}
-                    {(order.status === "processing" || order.status === "preparing") && (
+                    {order.status === "preparing" && (
                       <div
                         className="bg-[#E9B60A] bg-opacity-20 border-2 border-[#E9B60A] border-opacity-30 p-4"
                         style={{ borderRadius: "0px" }}
