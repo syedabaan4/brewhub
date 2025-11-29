@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 
 export default function CheckoutPage() {
   const { items, getCartTotal, clearCart } = useCartStore();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, loadUser } = useAuthStore();
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -19,9 +19,19 @@ export default function CheckoutPage() {
   const [completedOrder, setCompletedOrder] = useState<any>(null);
   const router = useRouter();
 
+  // Load user on mount
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
+      return;
+    }
+    // Redirect admin users to admin panel
+    if (user?.is_admin) {
+      router.push("/admin/orders");
       return;
     }
     // Prefill contact information from user account
@@ -288,14 +298,23 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Continue Shopping Button */}
-            <button
-              onClick={() => router.push("/menu")}
-              className="w-full bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
-              style={{ borderRadius: "0px" }}
-            >
-              CONTINUE SHOPPING
-            </button>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => router.push(`/orders/${completedOrder._id || completedOrder.id}`)}
+                className="flex-1 bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
+                style={{ borderRadius: "0px" }}
+              >
+                TRACK ORDER
+              </button>
+              <button
+                onClick={() => router.push("/menu")}
+                className="flex-1 bg-transparent border-2 border-[#121212] text-[#121212] hover:bg-[#121212] hover:text-[#F7F7F5] px-6 sm:px-8 py-3 sm:py-4 font-black text-xs tracking-[0.15em] uppercase transition-all cursor-pointer"
+                style={{ borderRadius: "0px" }}
+              >
+                CONTINUE SHOPPING
+              </button>
+            </div>
           </div>
         </main>
       </div>

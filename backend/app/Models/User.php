@@ -22,6 +22,7 @@ class User extends Model implements AuthenticatableContract
         'phone',
         'address',
         'email_verified_at',
+        'is_admin',
     ];
 
     protected $hidden = [
@@ -31,7 +32,16 @@ class User extends Model implements AuthenticatableContract
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_admin' => 'boolean',
     ];
+
+    /**
+     * Check if user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
+    }
 
     /**
      * Override tokens relationship for MongoDB.

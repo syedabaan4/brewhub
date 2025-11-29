@@ -1,9 +1,11 @@
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   phone?: string;
   address?: string;
+  is_admin?: boolean;
 }
 
 export interface AddOn {
@@ -38,18 +40,23 @@ export interface Cart {
   total: number;
 }
 
+export type OrderStatus = 'received' | 'preparing' | 'ready_for_pickup' | 'completed' | 'cancelled' | 'pending';
+
 export interface Order {
   id: string;
+  _id?: string;
   user_id: string;
   order_number: string;
   items: CartItem[];
   total_price: number;
-  status: 'pending' | 'processing' | 'completed' | 'cancelled';
+  status: OrderStatus;
   payment_status: 'pending' | 'paid' | 'failed';
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  estimated_completion_time?: string | null;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface AuthResponse {

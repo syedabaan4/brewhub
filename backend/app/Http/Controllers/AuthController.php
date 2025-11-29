@@ -69,8 +69,12 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Ensure is_admin is explicitly included in response
+        $userData = $user->toArray();
+        $userData['is_admin'] = $user->is_admin ?? false;
+
         return response()->json([
-            'user' => $user,
+            'user' => $userData,
             'token' => $token,
         ]);
     }
@@ -84,7 +88,11 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user();
+        $userData = $user->toArray();
+        $userData['is_admin'] = $user->is_admin ?? false;
+        
+        return response()->json($userData);
     }
 }
 

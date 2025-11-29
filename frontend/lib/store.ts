@@ -51,6 +51,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       set({ user, token, isAuthenticated: true, loading: false });
       toast.success('Login successful!');
+      
+      return user; // Return user for immediate role-based routing
     } catch (error: any) {
       set({ loading: false });
       toast.error(error.response?.data?.message || 'Login failed');

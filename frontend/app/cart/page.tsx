@@ -16,18 +16,28 @@ export default function CartPage() {
     removeFromCart,
     getCartTotal,
   } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user, loadUser } = useAuthStore();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
+
+  // Load user on mount
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
       return;
     }
+    // Redirect admin users to admin panel
+    if (user?.is_admin) {
+      router.push("/admin/orders");
+      return;
+    }
     fetchCart();
-  }, [isAuthenticated, fetchCart, router]);
+  }, [isAuthenticated, user, fetchCart, router]);
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 0) return;

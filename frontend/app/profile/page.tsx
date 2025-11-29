@@ -9,7 +9,7 @@ import { Order } from "@/types";
 import toast from "react-hot-toast";
 
 export default function ProfilePage() {
-  const { isAuthenticated, user, updateProfile, loading } = useAuthStore();
+  const { isAuthenticated, user, updateProfile, loading, loadUser } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -22,9 +22,19 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"profile" | "orders">("profile");
   const router = useRouter();
 
+  // Load user on mount
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
+      return;
+    }
+    // Redirect admin users to admin panel
+    if (user?.is_admin) {
+      router.push("/admin/orders");
       return;
     }
     if (user) {
@@ -94,12 +104,35 @@ export default function ProfilePage() {
     switch (status) {
       case "completed":
         return "bg-[#4AA5A2]";
+      case "ready_for_pickup":
+        return "bg-[#4AA5A2]";
+      case "preparing":
+        return "bg-[#E9B60A]";
+      case "received":
+        return "bg-[#3973B8]";
       case "processing":
         return "bg-[#3973B8]";
       case "cancelled":
         return "bg-[#E97F8A]";
       default:
         return "bg-[#E9B60A]";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "received":
+        return "Received";
+      case "preparing":
+        return "Preparing";
+      case "ready_for_pickup":
+        return "Ready for Pickup";
+      case "completed":
+        return "Completed";
+      case "cancelled":
+        return "Cancelled";
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
     }
   };
 
@@ -394,7 +427,7 @@ export default function ProfilePage() {
                           style={{ borderRadius: "0px" }}
                         >
                           <span className="text-[#121212] font-black text-xs tracking-[0.15em] uppercase">
-                            {order.status}
+                            {getStatusLabel(order.status)}
                           </span>
                         </div>
                         <div
@@ -502,24 +535,33 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Status Messages */}
-                    {order.status === "pending" && (
-                      <div
-                        className="bg-[#E9B60A] bg-opacity-20 border-2 border-[#E9B60A] border-opacity-30 p-4"
-                        style={{ borderRadius: "0px" }}
-                      >
-                        <p className="text-sm text-[#121212] font-medium">
-                          🏪 Your order is being prepared. We'll contact you
-                          when it's ready for pickup!
-                        </p>
-                      </div>
-                    )}
-                    {order.status === "processing" && (
+                    {(order.status === "pending" || order.status === "received") && (
                       <div
                         className="bg-[#3973B8] bg-opacity-20 border-2 border-[#3973B8] border-opacity-30 p-4"
                         style={{ borderRadius: "0px" }}
                       >
                         <p className="text-sm text-[#121212] font-medium">
-                          ☕ Your order is being prepared!
+                          📋 Your order has been received and will be prepared shortly.
+                        </p>
+                      </div>
+                    )}
+                    {(order.status === "processing" || order.status === "preparing") && (
+                      <div
+                        className="bg-[#E9B60A] bg-opacity-20 border-2 border-[#E9B60A] border-opacity-30 p-4"
+                        style={{ borderRadius: "0px" }}
+                      >
+                        <p className="text-sm text-[#121212] font-medium">
+                          ☕ Our baristas are preparing your order!
+                        </p>
+                      </div>
+                    )}
+                    {order.status === "ready_for_pickup" && (
+                      <div
+                        className="bg-[#4AA5A2] bg-opacity-20 border-2 border-[#4AA5A2] border-opacity-30 p-4"
+                        style={{ borderRadius: "0px" }}
+                      >
+                        <p className="text-sm text-[#121212] font-medium">
+                          🔔 Your order is ready! Please come to the counter to pick it up.
                         </p>
                       </div>
                     )}
@@ -532,6 +574,27 @@ export default function ProfilePage() {
                           ✅ Order completed. Thank you for your purchase!
                         </p>
                       </div>
+                    )}
+                    {order.status === "cancelled" && (
+                      <div
+                        className="bg-[#E97F8A] bg-opacity-20 border-2 border-[#E97F8A] border-opacity-30 p-4"
+                        style={{ borderRadius: "0px" }}
+                      >
+                        <p className="text-sm text-[#121212] font-medium">
+                          ❌ This order has been cancelled.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Track Order Button - shown for active orders */}
+                    {!["completed", "cancelled"].includes(order.status) && (
+                      <button
+                        onClick={() => router.push(`/orders/${(order as any)._id || order.id}`)}
+                        className="w-full mt-4 bg-[#121212] hover:bg-opacity-90 hover:scale-105 text-[#F7F7F5] px-6 py-3 font-black text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:shadow-lg cursor-pointer"
+                        style={{ borderRadius: "0px" }}
+                      >
+                        TRACK ORDER
+                      </button>
                     )}
                   </div>
                 ))}

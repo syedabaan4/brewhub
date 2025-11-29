@@ -11,12 +11,24 @@ import toast from "react-hot-toast";
 export default function MenuPage() {
   const { products, loading, fetchProducts } = useProductStore();
   const { addToCart } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user, loadUser } = useAuthStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
+
+  // Load user and check if admin
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
+  // Redirect admin users to admin panel
+  useEffect(() => {
+    if (isAuthenticated && user?.is_admin) {
+      router.push("/admin/orders");
+    }
+  }, [isAuthenticated, user, router]);
 
   useEffect(() => {
     fetchProducts();

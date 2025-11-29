@@ -9,20 +9,30 @@ import Navbar from "@/components/Navbar";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, isAuthenticated, loading } = useAuthStore();
+  const { login, isAuthenticated, user, loading } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/menu");
+    if (isAuthenticated && user) {
+      // Redirect based on user role
+      if (user.is_admin) {
+        router.push("/admin/orders");
+      } else {
+        router.push("/menu");
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password);
-      router.push("/menu");
+      const loggedInUser = await login(email, password);
+      // Redirect based on user role immediately
+      if (loggedInUser?.is_admin) {
+        router.push("/admin/orders");
+      } else {
+        router.push("/menu");
+      }
     } catch (error) {
       // Error is handled in the store
     }

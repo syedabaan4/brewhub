@@ -12,12 +12,14 @@ export default function Navbar() {
   const cartCount = getCartCount();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const isAdmin = user?.is_admin === true;
+
   useEffect(() => {
     loadUser();
-    if (isAuthenticated) {
+    if (isAuthenticated && !isAdmin) {
       fetchCart();
     }
-  }, [isAuthenticated, loadUser, fetchCart]);
+  }, [isAuthenticated, loadUser, fetchCart, isAdmin]);
 
   const handleLogout = () => {
     logout();
@@ -64,40 +66,22 @@ export default function Navbar() {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center gap-2">
-            <Link
-              href="/menu"
-              className="px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
-              style={{ borderRadius: "0px" }}
-            >
-              Menu
-            </Link>
-
-            {isAuthenticated ? (
+            {isAuthenticated && isAdmin ? (
               <>
-                {/* Cart */}
-                <Link
-                  href="/cart"
-                  className="relative px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
-                  style={{ borderRadius: "0px" }}
-                >
-                  Cart
-                  {cartCount > 0 && (
-                    <span
-                      className="absolute -top-1 -right-1 bg-[#E9B60A] text-[#121212] text-xs font-black w-5 h-5 flex items-center justify-center"
-                      style={{ borderRadius: "0px" }}
-                    >
-                      {cartCount > 9 ? "9+" : cartCount}
-                    </span>
-                  )}
-                </Link>
+                {/* Admin Badge */}
+                <div className="bg-[#E9B60A] px-3 py-1 mr-2">
+                  <span className="text-[#121212] font-bold text-[10px] tracking-[0.15em] uppercase">
+                    Admin
+                  </span>
+                </div>
 
-                {/* Profile */}
+                {/* Orders Management */}
                 <Link
-                  href="/profile"
+                  href="/admin/orders"
                   className="px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
                   style={{ borderRadius: "0px" }}
                 >
-                  Profile
+                  Orders
                 </Link>
 
                 {/* Logout */}
@@ -111,23 +95,72 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                {/* Login */}
                 <Link
-                  href="/login"
+                  href="/menu"
                   className="px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
                   style={{ borderRadius: "0px" }}
                 >
-                  Login
+                  Menu
                 </Link>
 
-                {/* Sign Up CTA */}
-                <Link
-                  href="/register"
-                  className="bg-[#E9B60A] text-[#121212] px-4 lg:px-6 py-2 lg:py-3 font-black text-xs sm:text-sm tracking-[0.15em] uppercase transition-all hover:bg-opacity-90 hover:scale-105 cursor-pointer"
-                  style={{ borderRadius: "0px" }}
-                >
-                  Sign Up
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    {/* Cart */}
+                    <Link
+                      href="/cart"
+                      className="relative px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                      style={{ borderRadius: "0px" }}
+                    >
+                      Cart
+                      {cartCount > 0 && (
+                        <span
+                          className="absolute -top-1 -right-1 bg-[#E9B60A] text-[#121212] text-xs font-black w-5 h-5 flex items-center justify-center"
+                          style={{ borderRadius: "0px" }}
+                        >
+                          {cartCount > 9 ? "9+" : cartCount}
+                        </span>
+                      )}
+                    </Link>
+
+                    {/* Profile */}
+                    <Link
+                      href="/profile"
+                      className="px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                      style={{ borderRadius: "0px" }}
+                    >
+                      Profile
+                    </Link>
+
+                    {/* Logout */}
+                    <button
+                      onClick={handleLogout}
+                      className="px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                      style={{ borderRadius: "0px" }}
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Login */}
+                    <Link
+                      href="/login"
+                      className="px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                      style={{ borderRadius: "0px" }}
+                    >
+                      Login
+                    </Link>
+
+                    {/* Sign Up CTA */}
+                    <Link
+                      href="/register"
+                      className="bg-[#E9B60A] text-[#121212] px-4 lg:px-6 py-2 lg:py-3 font-black text-xs sm:text-sm tracking-[0.15em] uppercase transition-all hover:bg-opacity-90 hover:scale-105 cursor-pointer"
+                      style={{ borderRadius: "0px" }}
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -200,43 +233,25 @@ export default function Navbar() {
 
         {/* Mobile Navigation Links */}
         <div className="flex flex-col px-4 py-2 space-y-1">
-          <Link
-            href="/menu"
-            onClick={closeMobileMenu}
-            className="px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left"
-            style={{ borderRadius: "0px" }}
-          >
-            Menu
-          </Link>
-
-          {isAuthenticated ? (
+          {isAuthenticated && isAdmin ? (
             <>
-              {/* Cart */}
-              <Link
-                href="/cart"
-                onClick={closeMobileMenu}
-                className="relative px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left flex items-center justify-between"
-                style={{ borderRadius: "0px" }}
-              >
-                <span>Cart</span>
-                {cartCount > 0 && (
-                  <span
-                    className="bg-[#E9B60A] text-[#121212] text-xs font-black px-2 py-1 ml-2"
-                    style={{ borderRadius: "0px" }}
-                  >
-                    {cartCount > 9 ? "9+" : cartCount}
+              {/* Admin Badge */}
+              <div className="px-4 py-2">
+                <div className="bg-[#E9B60A] px-3 py-1 inline-block">
+                  <span className="text-[#121212] font-bold text-[10px] tracking-[0.15em] uppercase">
+                    Admin Panel
                   </span>
-                )}
-              </Link>
+                </div>
+              </div>
 
-              {/* Profile */}
+              {/* Orders Management */}
               <Link
-                href="/profile"
+                href="/admin/orders"
                 onClick={closeMobileMenu}
                 className="px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left"
                 style={{ borderRadius: "0px" }}
               >
-                Profile
+                Orders
               </Link>
 
               {/* Divider */}
@@ -253,28 +268,83 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {/* Login */}
               <Link
-                href="/login"
+                href="/menu"
                 onClick={closeMobileMenu}
                 className="px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left"
                 style={{ borderRadius: "0px" }}
               >
-                Login
+                Menu
               </Link>
 
-              {/* Divider */}
-              <div className="h-[1px] bg-[#F7F7F5] opacity-20 my-2"></div>
+              {isAuthenticated ? (
+                <>
+                  {/* Cart */}
+                  <Link
+                    href="/cart"
+                    onClick={closeMobileMenu}
+                    className="relative px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left flex items-center justify-between"
+                    style={{ borderRadius: "0px" }}
+                  >
+                    <span>Cart</span>
+                    {cartCount > 0 && (
+                      <span
+                        className="bg-[#E9B60A] text-[#121212] text-xs font-black px-2 py-1 ml-2"
+                        style={{ borderRadius: "0px" }}
+                      >
+                        {cartCount > 9 ? "9+" : cartCount}
+                      </span>
+                    )}
+                  </Link>
 
-              {/* Sign Up CTA */}
-              <Link
-                href="/register"
-                onClick={closeMobileMenu}
-                className="bg-[#E9B60A] text-[#121212] px-4 py-4 font-black text-sm tracking-[0.15em] uppercase transition-all hover:bg-opacity-90 text-center"
-                style={{ borderRadius: "0px" }}
-              >
-                Sign Up
-              </Link>
+                  {/* Profile */}
+                  <Link
+                    href="/profile"
+                    onClick={closeMobileMenu}
+                    className="px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left"
+                    style={{ borderRadius: "0px" }}
+                  >
+                    Profile
+                  </Link>
+
+                  {/* Divider */}
+                  <div className="h-[1px] bg-[#F7F7F5] opacity-20 my-2"></div>
+
+                  {/* Logout */}
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left w-full"
+                    style={{ borderRadius: "0px" }}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  {/* Login */}
+                  <Link
+                    href="/login"
+                    onClick={closeMobileMenu}
+                    className="px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left"
+                    style={{ borderRadius: "0px" }}
+                  >
+                    Login
+                  </Link>
+
+                  {/* Divider */}
+                  <div className="h-[1px] bg-[#F7F7F5] opacity-20 my-2"></div>
+
+                  {/* Sign Up CTA */}
+                  <Link
+                    href="/register"
+                    onClick={closeMobileMenu}
+                    className="bg-[#E9B60A] text-[#121212] px-4 py-4 font-black text-sm tracking-[0.15em] uppercase transition-all hover:bg-opacity-90 text-center"
+                    style={{ borderRadius: "0px" }}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </>
           )}
         </div>
