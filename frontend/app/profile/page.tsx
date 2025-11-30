@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import ReviewFormModal from "@/components/ReviewFormModal";
@@ -9,7 +9,7 @@ import api from "@/lib/api";
 import { Order, OrderReviewStatus } from "@/types";
 import toast from "react-hot-toast";
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const { isAuthenticated, user, updateProfile, loading, loadUser } =
     useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
@@ -743,5 +743,31 @@ export default function ProfilePage() {
         />
       )}
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#EDECE8]">
+          <Navbar />
+          <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-10 lg:py-12">
+            <div className="text-center py-20">
+              <div
+                className="inline-block bg-[#F7F7F5] px-8 sm:px-12 py-6 sm:py-8"
+                style={{ boxShadow: "0px 4px 12px rgba(0,0,0,0.06)" }}
+              >
+                <p className="text-xl sm:text-2xl text-[#121212] opacity-60 font-bold tracking-wide">
+                  LOADING...
+                </p>
+              </div>
+            </div>
+          </main>
+        </div>
+      }
+    >
+      <ProfilePageContent />
+    </Suspense>
   );
 }
