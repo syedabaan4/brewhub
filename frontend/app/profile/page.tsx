@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import ReviewFormModal from "@/components/ReviewFormModal";
 import { useAuthStore } from "@/lib/store";
@@ -23,6 +23,15 @@ export default function ProfilePage() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [activeTab, setActiveTab] = useState<"profile" | "orders">("profile");
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Read tab from URL query parameter
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "orders") {
+      setActiveTab("orders");
+    }
+  }, [searchParams]);
 
   // Review modal state
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -37,6 +46,11 @@ export default function ProfilePage() {
   const [orderReviewStatuses, setOrderReviewStatuses] = useState<{
     [orderId: string]: OrderReviewStatus;
   }>({});
+
+  // Track which order's contact info is expanded
+  const [expandedContactInfo, setExpandedContactInfo] = useState<string | null>(
+    null,
+  );
 
   // Load user on mount
   useEffect(() => {
@@ -83,7 +97,7 @@ export default function ProfilePage() {
         fetchOrderReviewStatus(order._id || order.id);
       }
     } catch (error: any) {
-      toast.error("Failed to load order history");
+      toast.error("Failed to load orders");
     } finally {
       setLoadingOrders(false);
     }
@@ -251,7 +265,7 @@ export default function ProfilePage() {
             }`}
             style={{ borderRadius: "0px" }}
           >
-            ORDER HISTORY
+            MY ORDERS
           </button>
         </div>
 
@@ -426,7 +440,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-6 max-w-2xl">
                 {orders.map((order) => (
                   <div
                     key={order.id}
@@ -573,37 +587,70 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    {/* Contact Information */}
-                    <div className="border-t-2 border-[#121212] border-opacity-10 pt-6 mb-6">
-                      <h4 className="text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-4">
-                        Contact Information
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-xs text-[#121212] opacity-40 uppercase tracking-wide mb-1">
-                            Name
-                          </p>
-                          <p className="font-medium text-[#121212]">
-                            {order.customer_name}
-                          </p>
+                    {/* Contact Information - Collapsible */}
+                    <div className="border-t-2 border-[#121212] border-opacity-10 pt-4 mb-6">
+                      <button
+                        onClick={() =>
+                          setExpandedContactInfo(
+                            expandedContactInfo ===
+                              ((order as any)._id || order.id)
+                              ? null
+                              : (order as any)._id || order.id,
+                          )
+                        }
+                        className="w-full flex items-center justify-between py-2 cursor-pointer group"
+                      >
+                        <h4 className="text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase group-hover:opacity-70 transition-opacity">
+                          Contact Information
+                        </h4>
+                        <svg
+                          className={`w-4 h-4 text-[#121212] opacity-50 transition-transform duration-200 ${
+                            expandedContactInfo ===
+                            ((order as any)._id || order.id)
+                              ? "rotate-180"
+                              : ""
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </button>
+                      {expandedContactInfo ===
+                        ((order as any)._id || order.id) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm pt-4">
+                          <div>
+                            <p className="text-xs text-[#121212] opacity-40 uppercase tracking-wide mb-1">
+                              Name
+                            </p>
+                            <p className="font-medium text-[#121212]">
+                              {order.customer_name}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-[#121212] opacity-40 uppercase tracking-wide mb-1">
+                              Phone
+                            </p>
+                            <p className="font-medium text-[#121212]">
+                              {order.customer_phone}
+                            </p>
+                          </div>
+                          <div className="sm:col-span-2">
+                            <p className="text-xs text-[#121212] opacity-40 uppercase tracking-wide mb-1">
+                              Email
+                            </p>
+                            <p className="font-medium text-[#121212]">
+                              {order.customer_email}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs text-[#121212] opacity-40 uppercase tracking-wide mb-1">
-                            Phone
-                          </p>
-                          <p className="font-medium text-[#121212]">
-                            {order.customer_phone}
-                          </p>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <p className="text-xs text-[#121212] opacity-40 uppercase tracking-wide mb-1">
-                            Email
-                          </p>
-                          <p className="font-medium text-[#121212]">
-                            {order.customer_email}
-                          </p>
-                        </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* Status Messages */}

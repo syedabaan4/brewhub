@@ -83,7 +83,10 @@ export default function AdminOrdersPage() {
     }
   }, [authChecked, isAuthenticated, user, router, fetchOrders]);
 
-  const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
+  const handleStatusUpdate = async (
+    orderId: string,
+    newStatus: OrderStatus,
+  ) => {
     setUpdating(orderId);
     try {
       await api.put(`/admin/orders/${orderId}`, { status: newStatus });
@@ -100,7 +103,9 @@ export default function AdminOrdersPage() {
     setUpdating(orderId);
     try {
       const eta = new Date(Date.now() + etaMinutes * 60 * 1000).toISOString();
-      await api.put(`/admin/orders/${orderId}`, { estimated_completion_time: eta });
+      await api.put(`/admin/orders/${orderId}`, {
+        estimated_completion_time: eta,
+      });
       toast.success("ETA updated successfully");
       fetchOrders();
     } catch (err: any) {
@@ -276,12 +281,16 @@ export default function AdminOrdersPage() {
                         onChange={(e) =>
                           handleStatusUpdate(
                             (order as any)._id || order.id,
-                            e.target.value as OrderStatus
+                            e.target.value as OrderStatus,
                           )
                         }
                         disabled={updating === ((order as any)._id || order.id)}
-                        className="px-4 py-2 border-2 border-[#121212] border-opacity-20 bg-white text-[#121212] text-sm font-medium focus:outline-none focus:border-[#121212] focus:border-opacity-40 disabled:opacity-50"
-                        style={{ borderRadius: "0px" }}
+                        className="pl-3 pr-8 py-2 border-2 border-[#121212] border-opacity-20 bg-white text-[#121212] text-sm font-medium focus:outline-none focus:border-[#121212] focus:border-opacity-40 disabled:opacity-50 appearance-none bg-no-repeat cursor-pointer"
+                        style={{
+                          borderRadius: "0px",
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%23121212' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4 4 4-4'/%3E%3C/svg%3E")`,
+                          backgroundPosition: "right 10px center",
+                        }}
                       >
                         {STATUS_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -304,10 +313,12 @@ export default function AdminOrdersPage() {
                               onClick={() =>
                                 handleETAUpdate(
                                   (order as any)._id || order.id,
-                                  mins
+                                  mins,
                                 )
                               }
-                              disabled={updating === ((order as any)._id || order.id)}
+                              disabled={
+                                updating === ((order as any)._id || order.id)
+                              }
                               className="px-3 py-2 border-2 border-[#121212] border-opacity-20 bg-white text-[#121212] text-xs font-bold hover:bg-[#121212] hover:text-[#F7F7F5] transition-all disabled:opacity-50"
                               style={{ borderRadius: "0px" }}
                             >
@@ -374,11 +385,12 @@ export default function AdminOrdersPage() {
                         <span className="text-sm font-medium text-[#121212]">
                           {item.quantity}× {item.product_name || "Item"}
                         </span>
-                        {item.selected_addons && item.selected_addons.length > 0 && (
-                          <span className="text-xs text-[#121212] opacity-60 ml-2">
-                            (+{item.selected_addons.length} add-ons)
-                          </span>
-                        )}
+                        {item.selected_addons &&
+                          item.selected_addons.length > 0 && (
+                            <span className="text-xs text-[#121212] opacity-60 ml-2">
+                              (+{item.selected_addons.length} add-ons)
+                            </span>
+                          )}
                       </div>
                     ))}
                   </div>
@@ -391,4 +403,3 @@ export default function AdminOrdersPage() {
     </div>
   );
 }
-

@@ -312,56 +312,91 @@ export default function OrderTrackingPage() {
             </div>
           )}
 
-          {/* Progress Tracker */}
+          {/* Progress Tracker - Horizontal */}
           {!isCancelled && (
             <div className="mb-10">
-              <h2 className="text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase mb-6 text-center">
-                Order Progress
-              </h2>
-              <div className="flex items-center justify-between relative">
-                {/* Progress Line Background */}
-                <div className="absolute top-5 left-0 right-0 h-1 bg-[#121212] bg-opacity-10 mx-8" />
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-[2px] w-12 bg-[#121212] opacity-20"></div>
+                <h2 className="text-xs font-bold text-[#121212] opacity-50 tracking-[0.15em] uppercase whitespace-nowrap">
+                  Order Progress
+                </h2>
+                <div className="h-[2px] flex-1 bg-[#121212] opacity-20"></div>
+              </div>
 
-                {/* Progress Line Fill */}
+              <div className="relative">
+                {/* Progress Line Container - starts and ends at center of first/last steps */}
                 <div
-                  className="absolute top-5 left-0 h-1 bg-[#4AA5A2] mx-8 transition-all duration-500"
+                  className="absolute top-3 h-[2px] bg-[#121212] opacity-10"
                   style={{
-                    width: `calc(${(currentStepIndex / (STATUS_STEPS.length - 1)) * 100}% - 4rem)`,
+                    left: `${100 / (STATUS_STEPS.length * 2)}%`,
+                    right: `${100 / (STATUS_STEPS.length * 2)}%`,
                   }}
                 />
 
-                {STATUS_STEPS.map((step, index) => {
-                  const stepConfig = STATUS_CONFIG[step];
-                  const isActive = index <= currentStepIndex;
-                  const isCurrent = index === currentStepIndex;
+                {/* Filled Progress Line */}
+                <div
+                  className="absolute top-3 h-[2px] bg-[#4AA5A2] transition-all duration-500"
+                  style={{
+                    left: `${100 / (STATUS_STEPS.length * 2)}%`,
+                    width: `${(currentStepIndex / (STATUS_STEPS.length - 1)) * (100 - 100 / STATUS_STEPS.length)}%`,
+                  }}
+                />
 
-                  return (
-                    <div
-                      key={step}
-                      className="flex flex-col items-center relative z-10"
-                    >
+                {/* Steps */}
+                <div className="flex justify-between relative">
+                  {STATUS_STEPS.map((step, index) => {
+                    const stepConfig = STATUS_CONFIG[step];
+                    const isActive = index <= currentStepIndex;
+                    const isCurrent = index === currentStepIndex;
+
+                    return (
                       <div
-                        className={`w-10 h-10 flex items-center justify-center text-xl transition-all duration-300 ${
-                          isActive
-                            ? "bg-[#4AA5A2]"
-                            : "bg-[#F7F7F5] border-2 border-[#121212] border-opacity-20"
-                        } ${isCurrent ? "scale-125 shadow-lg" : ""}`}
-                        style={{ borderRadius: "0px" }}
+                        key={step}
+                        className="flex flex-col items-center"
+                        style={{ width: `${100 / STATUS_STEPS.length}%` }}
                       >
-                        {stepConfig.emoji}
+                        {/* Step Indicator */}
+                        <div
+                          className={`w-6 h-6 flex items-center justify-center transition-all duration-300 ${
+                            isActive
+                              ? "bg-[#4AA5A2]"
+                              : "bg-[#EDECE8] border-2 border-[#121212] border-opacity-20"
+                          } ${isCurrent ? "ring-4 ring-[#4AA5A2] ring-opacity-20" : ""}`}
+                          style={{ borderRadius: "0px" }}
+                        >
+                          {isActive && (
+                            <svg
+                              className="w-3 h-3 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              strokeWidth={3}
+                            >
+                              <path
+                                strokeLinecap="square"
+                                strokeLinejoin="miter"
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          )}
+                        </div>
+
+                        {/* Label */}
+                        <p
+                          className={`mt-2 sm:mt-3 text-[8px] sm:text-[14px] font-bold tracking-[0.05em] sm:tracking-[0.1em] uppercase text-center ${
+                            isCurrent
+                              ? "text-[#121212] animate-pulse"
+                              : isActive
+                                ? "text-[#121212]"
+                                : "text-[#121212] opacity-40"
+                          }`}
+                        >
+                          {stepConfig.label}
+                        </p>
                       </div>
-                      <p
-                        className={`mt-3 text-[10px] font-bold tracking-[0.1em] uppercase text-center max-w-[80px] ${
-                          isActive
-                            ? "text-[#121212]"
-                            : "text-[#121212] opacity-40"
-                        }`}
-                      >
-                        {stepConfig.label}
-                      </p>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}

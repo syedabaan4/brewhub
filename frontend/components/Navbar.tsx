@@ -122,6 +122,15 @@ export default function Navbar() {
                       )}
                     </Link>
 
+                    {/* Orders */}
+                    <Link
+                      href="/profile?tab=orders"
+                      className="px-4 lg:px-6 py-2 lg:py-3 font-bold text-xs sm:text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212]"
+                      style={{ borderRadius: "0px" }}
+                    >
+                      Orders
+                    </Link>
+
                     {/* Profile */}
                     <Link
                       href="/profile"
@@ -295,6 +304,16 @@ export default function Navbar() {
                         {cartCount > 9 ? "9+" : cartCount}
                       </span>
                     )}
+                  </Link>
+
+                  {/* Orders */}
+                  <Link
+                    href="/profile?tab=orders"
+                    onClick={closeMobileMenu}
+                    className="px-4 py-4 font-bold text-sm tracking-[0.1em] uppercase transition-all hover:bg-[#F7F7F5] hover:text-[#121212] text-left"
+                    style={{ borderRadius: "0px" }}
+                  >
+                    Orders
                   </Link>
 
                   {/* Profile */}
