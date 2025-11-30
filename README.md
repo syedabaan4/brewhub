@@ -63,13 +63,20 @@ npm run dev  # Runs on http://localhost:3000
   - `GET /api/products` - List all products
   - `GET /api/products/{id}` - Product details
   - `GET /api/categories` - List product categories
+  - `GET /api/products/{id}/reviews` - Get reviews for a product
 
 **Protected Routes (Requires Bearer Token)**
 
   - **Auth:** `POST /api/logout`, `GET /api/user`
   - **Profile:** `GET /api/profile`, `PUT /api/profile`
-  - **Cart:** `GET /api/cart`, `POST /api/cart/add`, `PUT /api/cart/update/{id}`, `DELETE /api/cart/remove/{id}`
+  - **Cart:** `GET /api/cart`, `POST /api/cart/add`, `PUT /api/cart/update/{productId}`, `DELETE /api/cart/remove/{productId}`, `DELETE /api/cart/clear`
   - **Orders:** `GET /api/orders`, `POST /api/orders`, `GET /api/orders/{id}`
+  - **Reviews:** `POST /api/reviews`, `GET /api/orders/{id}/review-status`
+
+**Admin Routes (Requires Bearer Token + Admin Role)**
+
+  - `GET /api/admin/orders` - List all orders (admin view)
+  - `PUT /api/admin/orders/{id}` - Update order status
 
 See individual README files in `frontend/` and `backend/` for more details.
 
@@ -79,55 +86,79 @@ See individual README files in `frontend/` and `backend/` for more details.
 Brewhub/
 ├── frontend/                     # Next.js Frontend
 │   ├── app/                      # App Router (Next.js 14+)
-│   │   ├── login/               # Login page
-│   │   ├── register/            # Registration page
-│   │   ├── menu/                # Product menu page
+│   │   ├── admin/               # Admin section
+│   │   │   └── orders/          # Admin order management page
 │   │   ├── cart/                # Shopping cart page
 │   │   ├── checkout/            # Checkout page
+│   │   ├── login/               # Login page
+│   │   ├── menu/                # Product menu page
+│   │   ├── orders/              # Order history
+│   │   │   └── [id]/            # Order details page
 │   │   ├── profile/             # User profile page
+│   │   ├── register/            # Registration page
+│   │   ├── favicon.ico          # Site favicon
+│   │   ├── globals.css          # Global styles
 │   │   ├── layout.tsx           # Root layout with Navbar
-│   │   ├── page.tsx             # Home/landing page
-│   │   └── globals.css          # Global styles
+│   │   └── page.tsx             # Home/landing page
 │   ├── components/              # Reusable React components
-│   │   ├── Navbar.tsx           # Navigation bar
 │   │   ├── AddOnModal.tsx       # Add-ons selection modal for drink customization
-│   │   └── ConfirmModal.tsx     # Confirmation dialog for actions
+│   │   ├── ConfirmModal.tsx     # Confirmation dialog for actions
+│   │   ├── Navbar.tsx           # Navigation bar
+│   │   ├── OrderNotifications.tsx   # Real-time order status notifications
+│   │   ├── ReviewFormModal.tsx  # Modal for submitting product reviews
+│   │   └── ReviewsModal.tsx     # Modal for viewing product reviews
 │   ├── lib/                     # Utilities & client-side logic
 │   │   ├── api.ts               # Axios API client
 │   │   └── store.ts             # Zustand state stores
+│   ├── public/                  # Static assets
 │   ├── types/                   # TypeScript type definitions
 │   │   └── index.ts             # Shared types (User, Product, Cart, etc.)
 │   └── package.json             # Dependencies (Next.js, React, Zustand, Axios)
 │
 └── backend/                      # Laravel Backend API
     ├── app/
-    │   ├── Http/Controllers/    # API Controllers
-    │   │   ├── AuthController.php       # Login, register, logout
-    │   │   ├── CartController.php       # Cart operations
-    │   │   ├── OrderController.php      # Order management
-    │   │   ├── ProductController.php    # Product listing
-    │   │   └── ProfileController.php    # User profile
+    │   ├── Auth/                # Authentication utilities
+    │   │   └── NewAccessToken.php
+    │   ├── Http/
+    │   │   ├── Controllers/     # API Controllers
+    │   │   │   ├── AuthController.php       # Login, register, logout
+    │   │   │   ├── CartController.php       # Cart operations
+    │   │   │   ├── OrderController.php      # Order management
+    │   │   │   ├── ProductController.php    # Product listing
+    │   │   │   ├── ProfileController.php    # User profile
+    │   │   │   └── ReviewController.php     # Product reviews
+    │   │   └── Middleware/      # Custom middleware
+    │   │       └── AdminMiddleware.php      # Admin access control
     │   ├── Models/              # MongoDB Models
-    │   │   ├── User.php         # User model with authentication
-    │   │   ├── Product.php      # Coffee products
     │   │   ├── Cart.php         # Shopping cart items
-    │   │   └── Order.php        # Customer orders
-    │   ├── Rules/               # Custom validation rules
-    │   │   └── StrongPassword.php
-    │   └── Notifications/       # Email notifications
-    │       ├── WelcomeEmail.php         # Welcome email on registration
-    │       └── OrderConfirmation.php    # Order confirmation email with details
-    ├── routes/
-    │   └── api.php              # API routes definition
+    │   │   ├── Order.php        # Customer orders
+    │   │   ├── PersonalAccessToken.php  # API token model
+    │   │   ├── Product.php      # Coffee products
+    │   │   ├── Review.php       # Product reviews
+    │   │   └── User.php         # User model with authentication
+    │   ├── Notifications/       # Email notifications
+    │   │   ├── OrderConfirmation.php    # Order confirmation email
+    │   │   ├── OrderStatusUpdated.php   # Order status change notification
+    │   │   └── WelcomeEmail.php         # Welcome email on registration
+    │   └── Rules/               # Custom validation rules
+    │       └── StrongPassword.php
+    ├── config/
+    │   ├── cors.php             # CORS configuration
+    │   ├── database.php         # MongoDB connection config
+    │   ├── mail.php             # Email configuration
+    │   └── sanctum.php          # JWT authentication config
     ├── database/
     │   ├── seeders/             # Database seeders
-    │   │   ├── ProductSeeder.php    # Sample products
-    │   │   └── DatabaseSeeder.php
+    │   │   ├── DatabaseSeeder.php
+    │   │   └── ProductSeeder.php    # Sample products
     │   └── database.sqlite      # Local SQLite (optional)
-    ├── config/
-    │   ├── database.php         # MongoDB connection config
-    │   ├── sanctum.php          # JWT authentication config
-    │   └── cors.php             # CORS configuration
+    ├── deploy/                  # Deployment configuration
+    │   ├── nginx.conf           # Nginx server config
+    │   ├── start.sh             # Startup script
+    │   └── supervisor.conf      # Process manager config
+    ├── routes/
+    │   └── api.php              # API routes definition
+    ├── Dockerfile               # Docker container config
     └── composer.json            # Dependencies (Laravel, MongoDB, Sanctum)
 ```
 
