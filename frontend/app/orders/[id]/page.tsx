@@ -6,11 +6,16 @@ import Navbar from "@/components/Navbar";
 import { useAuthStore } from "@/lib/store";
 import api from "@/lib/api";
 import { Order, OrderStatus } from "@/types";
-import toast from "react-hot-toast";
 
 const STATUS_CONFIG: Record<
   OrderStatus,
-  { label: string; emoji: string; color: string; bgColor: string; message: string }
+  {
+    label: string;
+    emoji: string;
+    color: string;
+    bgColor: string;
+    message: string;
+  }
 > = {
   pending: {
     label: "Pending",
@@ -71,8 +76,16 @@ const requestNotificationPermission = async () => {
 };
 
 // Show browser notification (for background tabs)
-const showBrowserNotification = (title: string, body: string, emoji: string) => {
-  if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
+const showBrowserNotification = (
+  title: string,
+  body: string,
+  emoji: string,
+) => {
+  if (
+    "Notification" in window &&
+    Notification.permission === "granted" &&
+    document.hidden
+  ) {
     new Notification(`${emoji} ${title}`, { body, icon: "/favicon.ico" });
   }
 };
@@ -96,23 +109,23 @@ export default function OrderTrackingPage() {
     try {
       const response = await api.get(`/orders/${orderId}`);
       const newOrder = response.data;
-      
-      // Check for status change and notify
-      if (previousStatusRef.current && previousStatusRef.current !== newOrder.status) {
+
+      // Note: Toast notifications are handled globally by OrderNotifications component
+      // Only show browser notification if tab is not focused (for this specific order page)
+      if (
+        previousStatusRef.current &&
+        previousStatusRef.current !== newOrder.status
+      ) {
         const statusConfig = STATUS_CONFIG[newOrder.status as OrderStatus];
-        const toastMessage = `${statusConfig.emoji} Order ${statusConfig.label}: ${statusConfig.message}`;
-        
-        // Show toast notification
-        toast.success(toastMessage, { duration: 6000 });
-        
+
         // Show browser notification if tab is not focused
         showBrowserNotification(
           `Order ${statusConfig.label}`,
           statusConfig.message,
-          statusConfig.emoji
+          statusConfig.emoji,
         );
       }
-      
+
       previousStatusRef.current = newOrder.status;
       setOrder(newOrder);
       setError(null);
@@ -249,7 +262,9 @@ export default function OrderTrackingPage() {
         >
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="text-6xl sm:text-7xl mb-6">{statusConfig.emoji}</div>
+            <div className="text-6xl sm:text-7xl mb-6">
+              {statusConfig.emoji}
+            </div>
             <h1
               className="text-2xl sm:text-3xl font-bold text-[#121212] mb-3"
               style={{ letterSpacing: "-0.01em" }}
@@ -306,7 +321,7 @@ export default function OrderTrackingPage() {
               <div className="flex items-center justify-between relative">
                 {/* Progress Line Background */}
                 <div className="absolute top-5 left-0 right-0 h-1 bg-[#121212] bg-opacity-10 mx-8" />
-                
+
                 {/* Progress Line Fill */}
                 <div
                   className="absolute top-5 left-0 h-1 bg-[#4AA5A2] mx-8 transition-all duration-500"
@@ -337,7 +352,9 @@ export default function OrderTrackingPage() {
                       </div>
                       <p
                         className={`mt-3 text-[10px] font-bold tracking-[0.1em] uppercase text-center max-w-[80px] ${
-                          isActive ? "text-[#121212]" : "text-[#121212] opacity-40"
+                          isActive
+                            ? "text-[#121212]"
+                            : "text-[#121212] opacity-40"
                         }`}
                       >
                         {stepConfig.label}
@@ -359,7 +376,10 @@ export default function OrderTrackingPage() {
             </h2>
             <div className="space-y-4">
               {order.items?.map((item: any, index: number) => (
-                <div key={index} className="flex justify-between items-start gap-4">
+                <div
+                  key={index}
+                  className="flex justify-between items-start gap-4"
+                >
                   <div className="flex-1">
                     <p className="text-sm sm:text-base font-semibold text-[#121212] mb-1">
                       {item.product_name || "Item"}
@@ -367,30 +387,36 @@ export default function OrderTrackingPage() {
                     <p className="text-xs sm:text-sm text-[#121212] opacity-50">
                       Qty: {item.quantity} × ${item.price.toFixed(2)}
                     </p>
-                    {item.selected_addons && item.selected_addons.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {item.selected_addons.map((addon: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className="bg-[#E9B60A] px-3 py-1"
-                            style={{ borderRadius: "0px" }}
-                          >
-                            <span className="text-[10px] font-bold text-[#121212] tracking-[0.1em] uppercase">
-                              {addon.name} (+${addon.price.toFixed(2)})
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {item.selected_addons &&
+                      item.selected_addons.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {item.selected_addons.map(
+                            (addon: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="bg-[#E9B60A] px-3 py-1"
+                                style={{ borderRadius: "0px" }}
+                              >
+                                <span className="text-[10px] font-bold text-[#121212] tracking-[0.1em] uppercase">
+                                  {addon.name} (+${addon.price.toFixed(2)})
+                                </span>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
                   </div>
                   <p className="text-base sm:text-lg font-bold text-[#121212]">
                     $
                     {(() => {
                       let total = item.price * item.quantity;
-                      if (item.selected_addons && item.selected_addons.length > 0) {
+                      if (
+                        item.selected_addons &&
+                        item.selected_addons.length > 0
+                      ) {
                         const addonsTotal = item.selected_addons.reduce(
                           (sum: number, addon: any) => sum + addon.price,
-                          0
+                          0,
                         );
                         total += addonsTotal * item.quantity;
                       }
@@ -451,19 +477,25 @@ export default function OrderTrackingPage() {
                 </span>
               </div>
               <div className="flex gap-2">
-                <span className="text-[#121212] opacity-50 font-medium">Name:</span>
+                <span className="text-[#121212] opacity-50 font-medium">
+                  Name:
+                </span>
                 <span className="text-[#121212] font-semibold">
                   {order.customer_name}
                 </span>
               </div>
               <div className="flex gap-2">
-                <span className="text-[#121212] opacity-50 font-medium">Email:</span>
+                <span className="text-[#121212] opacity-50 font-medium">
+                  Email:
+                </span>
                 <span className="text-[#121212] font-semibold">
                   {order.customer_email}
                 </span>
               </div>
               <div className="flex gap-2">
-                <span className="text-[#121212] opacity-50 font-medium">Phone:</span>
+                <span className="text-[#121212] opacity-50 font-medium">
+                  Phone:
+                </span>
                 <span className="text-[#121212] font-semibold">
                   {order.customer_phone}
                 </span>
@@ -500,4 +532,3 @@ export default function OrderTrackingPage() {
     </div>
   );
 }
-
